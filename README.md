@@ -114,12 +114,19 @@ ddev drush php:script web/modules/custom/psiphos/tests/manuale/verifica_atto.php
 Se un estratto di delibera non si scarica:
 
 ```bash
-drush php:script web/modules/custom/psiphos/tests/manuale/diagnosi_estratti.php
+drush php:script web/modules/contrib/psiphos/scripts/diagnosi_estratti.php
 ```
 
 Non modifica nulla. Riferisce, per ogni delibera conclusa, quale delle quattro
 condizioni manca — rotta assente, atto non sigillato, file eliminato, file non
 leggibile — che da fuori si presentano tutte come una pagina non trovata.
+
+È l'unico strumento da riga di comando che viaggia con il modulo distribuito,
+in `scripts/`, ed è utilizzabile su un'installazione in esercizio proprio
+perché non scrive nulla. Le verifiche stanno invece in `tests/`, che il
+pacchetto non contiene: creano ruoli, sigillano verbali e modificano la
+configurazione, e si rifiutano di partire dove esistano verbali sigillati che
+non provengano dalle prove.
 
 Per comporre una seduta completa e sigillata da ispezionare — punto non
 deliberativo, approvazione unanime, approvazione a maggioranza con astenuti,

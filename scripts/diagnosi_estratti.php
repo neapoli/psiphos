@@ -4,12 +4,17 @@
  * @file
  * Perché un estratto di delibera non si scarica.
  *
- *   drush php:script web/modules/custom/psiphos/tests/manuale/diagnosi_estratti.php
+ *   drush php:script web/modules/contrib/psiphos/scripts/diagnosi_estratti.php
  *
  * Non modifica nulla. Riferisce, per ogni delibera conclusa, se l'atto è
  * sigillato, se il documento esiste come entità, se il file è sul disco ed è
  * leggibile: sono quattro condizioni distinte che da fuori si presentano
  * tutte come una pagina non trovata.
+ *
+ * Sta qui e non fra le verifiche proprio perché non modifica nulla: le
+ * verifiche restano fuori dal pacchetto distribuito, questo script viaggia
+ * con il modulo ed è utilizzabile su un'installazione in esercizio, dove
+ * serve — il giorno in cui una scuola segnala che un estratto non si scarica.
  */
 
 declare(strict_types=1);
