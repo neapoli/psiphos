@@ -1,0 +1,107 @@
+{#
+/**
+ * @file
+ * Scheda per il registro delle attività di trattamento, art. 30 § 1.
+ *
+ * Non è un registro: è la scheda del solo trattamento introdotto dal modulo,
+ * da inserire nel registro che l'istituzione già tiene. Le sette voci seguono
+ * l'ordine delle lettere di legge, perché è così che vengono cercate.
+ */
+#}
+{% include '@psiphos/psiphos-carta-istituto.html.twig' with {istituto: istituto} only %}
+
+<h1>{{ 'Registro delle attività di trattamento'|t }}<br>
+  <span class="nota">{{ "Scheda del trattamento «Sedute a distanza degli organi collegiali con voto deliberativo» — art. 30, paragrafo 1, del Regolamento (UE) 2016/679"|t }}</span></h1>
+
+<p class="nota">{{ "Scheda da inserire nel registro delle attività di trattamento dell'istituzione. Riporta la configurazione in essere alla data di produzione e va sostituita a ogni modifica delle impostazioni del modulo."|t }}</p>
+
+<h2>{{ 'a) Titolare del trattamento e Responsabile della protezione dei dati'|t }}</h2>
+<p><strong>{{ 'Titolare:'|t }}</strong> {{ istituto.istituto }}{% if istituto.comune %}, {{ istituto.indirizzo }} — {{ istituto.comune }}{% if istituto.provincia %} ({{ istituto.provincia }}){% endif %}{% endif %}{% if istituto.codice_fiscale %}, {{ 'C.F.'|t }} {{ istituto.codice_fiscale }}{% endif %}{% if istituto.pec %}, {{ istituto.pec }}{% endif %}. {{ 'In persona del Dirigente scolastico pro tempore.'|t }}</p>
+<p><strong>{{ 'Responsabile della protezione dei dati:'|t }}</strong> <span class="vuoto">_______________________________________________</span>
+  <span class="nota">{{ '(denominazione e recapito; dato non presente nel sito)'|t }}</span></p>
+
+<h2>{{ 'b) Finalità del trattamento'|t }}</h2>
+<p>{{ "Formazione della volontà degli organi collegiali e documentazione delle deliberazioni assunte, mediante svolgimento a distanza delle sedute con voto deliberativo."|t }}</p>
+<p><strong>{{ 'Base giuridica:'|t }}</strong> {{ "art. 6, paragrafo 1, lettera e), del Regolamento — esecuzione di un compito di interesse pubblico. Fonti: artt. 5, 7, 8 e 10 del d.lgs. 297/1994; art. 44 del CCNL comparto Istruzione e Ricerca del 18/01/2024; nota MIM prot. 3803 del 30/06/2026 e relativo allegato tecnico; Regolamento d'istituto adottato con delibera"|t }}
+  <span class="vuoto">_______________________</span>.</p>
+
+<h2>{{ 'c) Categorie di interessati e di dati personali'|t }}</h2>
+<p><strong>{{ 'Interessati:'|t }}</strong> {{ "personale docente e ATA componente degli organi collegiali; soggetti designati alla presidenza e alla verbalizzazione."|t }}</p>
+<p><strong>{{ 'Dati:'|t }}</strong> {{ "identificativo di utenza e nominativo; orari di ingresso, uscita e ultimo contatto dall'aula virtuale; impronta crittografica della sessione, azzerata alla chiusura della seduta; partecipazione a ciascuna votazione; voto espresso, con nominativo, nelle votazioni palesi; voto espresso, senza alcun riferimento al votante, nelle votazioni a scrutinio segreto; giustificazione dell'assenza; eventi del procedimento con identificativo di utenza."|t }}</p>
+<p><strong>{{ 'Dati non trattati:'|t }}</strong> {{ "indirizzi di rete, dati di navigazione, identificativi di dispositivo, agenti utente, registrazioni audio o video, dati biometrici."|t }}</p>
+<p><strong>{{ 'Categorie particolari (art. 9):'|t }}</strong> {{ "non previste. La giustificazione dell'assenza è un campo di testo libero e può accoglierne per iniziativa di chi redige: chi verbalizza è istruito a indicare la sola qualificazione formale dell'assenza."|t }}</p>
+
+<h2>{{ 'd) Categorie di destinatari'|t }}</h2>
+<p>{{ "Componenti dell'organo collegiale, per quanto reso conoscibile in seduta e nel verbale. Personale amministrativo incaricato della pubblicazione e della conservazione degli atti. Soggetti che esercitano il diritto di accesso agli atti nei limiti di legge."|t }}</p>
+<p><strong>{{ 'Responsabili del trattamento (art. 28):'|t }}</strong></p>
+<ol>
+  <li>
+    {{ "Fornitore del servizio di hosting:"|t }}
+    {% if hosting.denominazione %}
+      {{ hosting.denominazione }}{% if hosting.partita_iva %}, {{ 'P. IVA / C.F.'|t }} {{ hosting.partita_iva }}{% endif %}{% if hosting.sede %}, {{ hosting.sede }}{% endif %}.
+      {% if hosting.nomina_protocollo or hosting.nomina_data %}
+        {{ 'Atto di nomina'|t }}{% if hosting.nomina_protocollo %} {{ 'prot. @n'|t({'@n': hosting.nomina_protocollo}) }}{% endif %}{% if hosting.nomina_data %} {{ 'del @d'|t({'@d': hosting.nomina_data|date('d/m/Y')}) }}{% endif %}.
+      {% else %}
+        <strong>{{ 'Atto di nomina non registrato.'|t }}</strong>
+      {% endif %}
+    {% else %}
+      <span class="vuoto">_______________________________________________</span>
+      <span class="nota">{{ "(fornitore non indicato nelle impostazioni del modulo)"|t }}</span>
+    {% endif %}
+  </li>
+  <li>
+    {{ "Manutentore del sito istituzionale:"|t }}
+    {% if fornitore.denominazione %}
+      {{ fornitore.denominazione }}{% if fornitore.partita_iva %}, {{ 'P. IVA / C.F.'|t }} {{ fornitore.partita_iva }}{% endif %}{% if fornitore.contatto %}, {{ fornitore.contatto }}{% endif %}.
+    {% else %}
+      <span class="vuoto">_______________________________________________</span>
+    {% endif %}
+    {{ 'Atto di nomina'|t }} <span class="vuoto">_______________________</span>.
+  </li>
+</ol>
+<p class="nota">{{ "L'indicazione di un destinatario al quale non corrisponda un atto di nomina sottoscritto documenta un rapporto non regolato: la voce va comunque riportata, perché il dato è vero, e l'atto sottoscritto quanto prima."|t }}</p>
+
+<h2>{{ 'e) Trasferimenti verso Paesi terzi'|t }}</h2>
+{% if hosting.ubicazione_dati %}
+  <p>{{ "Il fornitore dell'infrastruttura dichiara che i dati, le copie di sicurezza e i registri risiedono in @paese. Il dato è riferito dal fornitore e non verificato dal sistema."|t({'@paese': hosting.ubicazione_dati}) }}
+    {% if hosting.riscontro_protocollo or hosting.riscontro_data %}
+      {{ 'Riscontro acquisito agli atti'|t }}{% if hosting.riscontro_protocollo %} {{ 'prot. @n'|t({'@n': hosting.riscontro_protocollo}) }}{% endif %}{% if hosting.riscontro_data %} {{ 'del @d'|t({'@d': hosting.riscontro_data|date('d/m/Y')}) }}{% endif %}.
+    {% endif %}
+  </p>
+{% else %}
+  <p><strong>{{ "Non risulta acquisita dal fornitore dell'infrastruttura alcuna dichiarazione sull'ubicazione dei dati: la voce non è compilabile e va integrata acquisendo il riscontro."|t }}</strong></p>
+{% endif %}
+<p>{{ "Il modulo non trasmette dati di seduta ad alcun servizio esterno: le operazioni di voto si svolgono per intero nel sistema informativo dell'istituzione."|t }}</p>
+<p class="nota">{{ "Lo strumento di videoconferenza eventualmente utilizzato per l'audio-video della seduta è oggetto di distinta scheda del registro: non è erogato dal modulo e la sua localizzazione va valutata separatamente."|t }}</p>
+
+<h2>{{ 'f) Termini ultimi previsti per la cancellazione'|t }}</h2>
+<table>
+  <tbody>
+    <tr><th scope="row">{{ 'Verbali sigillati ed estratti di delibera'|t }}</th><td><span class="vuoto">_______________</span> <span class="nota">{{ '(secondo il massimario di scarto adottato dall\'istituzione)'|t }}</span></td></tr>
+    <tr><th scope="row">{{ 'Registro delle presenze e dati di sessione'|t }}</th><td>{{ "fino alla cancellazione della seduta; l'impronta della sessione è azzerata alla chiusura"|t }}</td></tr>
+    <tr><th scope="row">{{ 'Schede della votazione a scrutinio segreto'|t }}</th><td>{{ 'come sopra; non contengono dati personali'|t }}</td></tr>
+    <tr><th scope="row">{{ 'Tracciature tecniche'|t }}</th>
+      <td>{% if configurazione.ritenzione %}{{ '@anni anni dalla chiusura della seduta, con rimozione automatica su sedute già verbalizzate'|t({'@anni': configurazione.ritenzione}) }}{% elseif configurazione.ritenzione_giorni %}{{ '@giorni giorni dalla chiusura della seduta, con rimozione automatica su sedute già verbalizzate'|t({'@giorni': configurazione.ritenzione_giorni}) }}{% else %}<strong>{{ 'nessuna rimozione automatica configurata'|t }}</strong>{% endif %}</td></tr>
+  </tbody>
+</table>
+
+<h2>{{ 'g) Descrizione generale delle misure di sicurezza (art. 32, paragrafo 1)'|t }}</h2>
+<p><strong>{{ 'Accesso e identificazione.'|t }}</strong> {{ "Ogni avente diritto è associato a un'utenza nominativa del sito; non sono ammessi accessi anonimi, generici o condivisi. Livello di autenticazione in essere: @livello."|t({'@livello': configurazione.autenticazione.riferisce}) }}
+  {{ configurazione.sessione_esclusiva ? "È consentita una sola sessione di voto per avente diritto: l'ingresso da un nuovo dispositivo revoca l'accreditamento del precedente."|t : "Non è imposta l'unicità della sessione: un avente diritto può risultare accreditato da più dispositivi contemporaneamente."|t }}
+  {{ "La presenza decade dopo @minuti minuti senza contatto dal dispositivo."|t({'@minuti': configurazione.minuti}) }}</p>
+
+<p><strong>{{ 'Segretezza del voto.'|t }}</strong> {{ "Nelle votazioni a scrutinio segreto l'attestazione di partecipazione e la scheda risiedono in due archivi privi di colonne comuni e privi di marche temporali; la scheda ha chiave primaria casuale, così che l'ordine di memorizzazione non conservi quello di deposito. Non esiste dato che colleghi il votante al voto. Resta un margine residuo per chi disponga dei registri del motore di banca dati, che stanno sotto l'applicazione: è contenuto con le istruzioni impartite al fornitore dell'infrastruttura nell'atto di nomina."|t }}</p>
+
+<p><strong>{{ 'Integrità e non ripudio.'|t }}</strong> {{ "L'urna chiusa porta un sigillo SHA-256 calcolato sull'insieme ordinato delle schede, che consente il riconteggio verificabile. Il verbale sigillato non è modificabile e porta doppia impronta, sul contenuto e sul documento. Gli eventi del procedimento sono concatenati per impronta, così che la rimozione o l'alterazione di una registrazione sia rilevabile."|t }}</p>
+
+<p><strong>{{ 'Riservatezza degli atti.'|t }}</strong> {{ "Verbali ed estratti sono archiviati fra i file a accesso riservato, non raggiungibili per via diretta; consultazione ed esportazione sono soggette a permessi distinti. La consultazione è inoltre circoscritta all'organo che ha prodotto l'atto: vi accede chi, su quella determinata seduta, figura fra gli aventi diritto ovvero l'ha presieduta, verbalizzata o convocata, oltre al dirigente scolastico e al personale di segreteria da lui individuato. I verbali dei gruppi di lavoro operativi restano così preclusi a chi non ne fa parte."|t }}</p>
+
+<p><strong>{{ 'Conservazione.'|t }}</strong> {{ configurazione.conservazione_disponibile ? "I documenti sono prodotti nel formato PDF/A-2B prescritto dalle Linee guida AgID, con i metadati di conservazione."|t : "La conversione nel formato PDF/A non è producibile su questo server: i documenti sono prodotti in PDF ordinario e il requisito di formato non è soddisfatto."|t }}</p>
+
+<p><strong>{{ 'Misure infrastrutturali.'|t }}</strong> {{ "Cifratura dei supporti e delle copie di sicurezza, aggiornamenti di sicurezza, segregazione degli ambienti, copie di sicurezza con prova periodica del ripristino, registrazione degli accessi amministrativi e gestione degli incidenti sono attuate sull'infrastruttura, e sono oggetto degli atti di nomina dei responsabili di cui alla lettera d)."|t }}</p>
+
+<div class="firma">
+  <p>{{ 'Data di inserimento nel registro'|t }} <span class="vuoto">_______________________________</span></p>
+  <p>{{ 'Il Dirigente scolastico'|t }} <span class="vuoto">_______________________________</span></p>
+  <p class="nota">{{ "Presa visione del Responsabile della protezione dei dati"|t }} <span class="vuoto">_______________________________</span></p>
+</div>

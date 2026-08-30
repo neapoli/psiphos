@@ -1,0 +1,165 @@
+{#
+/**
+ * @file
+ * Pagina di una seduta collegiale: convocazione, ordine del giorno, esiti.
+ *
+ * Variabili:
+ * - seduta: entità della seduta.
+ * - dati: struttura canonica della seduta.
+ * - odg: ordine del giorno con i comandi di redazione ammessi.
+ * - azioni: collegamenti operativi disponibili all'utente.
+ */
+#}
+<div class="psiphos-seduta">
+
+  <div class="tabella-cont">
+    <table class="psiphos-seduta__scheda">
+      <caption>{{ 'Convocazione'|t }}</caption>
+      <thead>
+        <tr>
+          <th scope="col">{{ 'Organo'|t }}</th>
+          <th scope="col">{{ 'Stato'|t }}</th>
+          <th scope="col">{{ 'Convocata per'|t }}</th>
+          <th scope="col">{{ 'Presidente'|t }}</th>
+          <th scope="col">{{ 'Verbalizzante'|t }}</th>
+          <th scope="col">{{ 'Aventi diritto'|t }}</th>
+          <th scope="col">{{ 'Quorum'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-etichetta="{{ 'Organo'|t }}">{{ dati.seduta.organo_denominazione }}</td>
+          <td data-etichetta="{{ 'Stato'|t }}">{{ stato_seduta }}</td>
+          <td data-etichetta="{{ 'Convocata per'|t }}">{{ dati.seduta.convocata_per|psiphos_istante }}</td>
+          <td data-etichetta="{{ 'Presidente'|t }}">{{ dati.seduta.presidente }}</td>
+          <td data-etichetta="{{ 'Verbalizzante'|t }}">{{ dati.seduta.segretario }}</td>
+          <td class="cifra" data-etichetta="{{ 'Aventi diritto'|t }}">{{ dati.costituzione.aventi_diritto }}</td>
+          <td class="cifra" data-etichetta="{{ 'Quorum'|t }}">
+            {% if dati.costituzione.aventi_diritto > 0 %}
+              <span class="valore">
+                <span>{{ '@numero richiesti'|t({'@numero': dati.costituzione.presenti_minimi}) }}</span>
+                <span class="qualifica">{{ '@numero presenti'|t({'@numero': dati.costituzione.presenti}) }}</span>
+              </span>
+            {% else %}
+              <span class="qualifica">{{ 'elenco da comporre'|t }}</span>
+            {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  {% if dati.metadati.riferimento_regolamento %}
+    <p class="psiphos-verbale__nota">
+      {{ "Regolamento d'istituto:"|t }} {{ dati.metadati.riferimento_regolamento }}
+    </p>
+  {% endif %}
+
+  {% if azioni %}
+    <ul class="psiphos-azioni">
+      {% for azione in azioni %}<li>{{ azione }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <h2>{{ 'Ordine del giorno'|t }}</h2>
+
+  {% if odg is empty %}
+    <p>{{ "Nessun punto all'ordine del giorno. Finché l'ordine del giorno è vuoto la seduta non ha nulla su cui deliberare."|t }}</p>
+  {% else %}
+    {#
+      La numerazione mostrata è quella del campo «numero» del punto, che è
+      quella scelta in convocazione e riportata nel verbale: può saltare o
+      ripetersi rispetto alla posizione in elenco. Il marcatore automatico
+      della lista è perciò rimosso, e role="list" conserva la semantica di
+      elenco che alcuni lettori di schermo perdono quando manca il marcatore.
+    #}
+    <ol class="psiphos-seduta__odg" role="list">
+      {% for punto in odg %}
+        <li>
+          <h3>
+            {{ punto.numero }}. {{ punto.oggetto }}
+            {%- if punto.numeri_delibera %}
+              <span class="psiphos-seduta__delibere">
+                ({{ punto.numeri_delibera|length > 1 ? 'Delibere n.'|t : 'Delibera n.'|t }}
+                {{- ' ' }}{{ punto.numeri_delibera|join(', ') }})
+              </span>
+            {%- endif %}
+          </h3>
+
+          {% if punto.illustrazione %}{{ punto.illustrazione|psiphos_testo(punto.illustrazione_formato) }}{% endif %}
+
+          {% if not punto.deliberativo %}
+            <p class="psiphos-verbale__nota">{{ 'Punto non deliberativo.'|t }}</p>
+          {% endif %}
+
+          {% if punto.comandi or punto.aggiungi_delibera %}
+            <ul class="psiphos-azioni">
+              {% for comando in punto.comandi %}<li>{{ comando }}</li>{% endfor %}
+              {% if punto.aggiungi_delibera %}<li>{{ punto.aggiungi_delibera }}</li>{% endif %}
+            </ul>
+          {% endif %}
+
+          {% if punto.delibere is empty and punto.deliberativo %}
+            <p class="psiphos-verbale__nota">{{ 'Nessuna delibera predisposta su questo punto.'|t }}</p>
+          {% endif %}
+
+          {% for delibera in punto.delibere %}
+            <div class="psiphos-seduta__votazione">
+              <p>
+                {%- if delibera.numero %}<strong>{{ 'Delibera n. @numero'|t({'@numero': delibera.numero}) }} — </strong>{% endif -%}
+                <strong>{{ delibera.quesito }}</strong>
+              </p>
+              <p class="psiphos-verbale__nota">{{ delibera.modalita }} — {{ delibera.stato|lower }}</p>
+
+              {% if delibera.esito %}
+                <p>
+                  {{ 'Esito:'|t }} <strong>{{ delibera.esito }}</strong>
+                  ({{ 'votanti @votanti su @presenti presenti'|t({
+                    '@votanti': delibera.votanti,
+                    '@presenti': delibera.presenti_al_voto,
+                  }) }})
+                </p>
+
+                {% if delibera.conteggio %}
+                  <table class="psiphos-seduta__scrutinio">
+                    <caption>{{ 'Scrutinio'|t }}</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">{{ 'Voce'|t }}</th>
+                        <th scope="col">{{ 'Voti'|t }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for riga in delibera.conteggio %}
+                        <tr>
+                          <th scope="row">
+                            {{ riga.voce }}
+                            {% if riga.prevalente %} — <strong>{{ 'proclamata'|t }}</strong>{% endif %}
+                          </th>
+                          <td>{{ riga.voti }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                {% endif %}
+
+                {% if delibera.criterio %}
+                  <p class="psiphos-verbale__nota">{{ delibera.criterio }}</p>
+                {% endif %}
+              {% endif %}
+
+              {% if delibera.comandi or delibera.ripeti or delibera.atto %}
+                <ul class="psiphos-azioni">
+                  {% for comando in delibera.comandi %}<li>{{ comando }}</li>{% endfor %}
+                  {% for comando in delibera.atto %}<li>{{ comando }}</li>{% endfor %}
+                  {% if delibera.ripeti %}<li>{{ delibera.ripeti }}</li>{% endif %}
+                </ul>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
+</div>

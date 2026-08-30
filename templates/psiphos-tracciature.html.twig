@@ -1,0 +1,61 @@
+{#
+/**
+ * @file
+ * Tracciature tecniche di una seduta.
+ *
+ * Ogni annotazione incorpora l'impronta della precedente: la verifica in
+ * testa alla pagina scorre la catena e segnala dove si interrompe. Una
+ * tracciatura rimossa o alterata non passa inosservata.
+ */
+#}
+<div class="psiphos-tracciature">
+
+  <p class="psiphos-verifica__esito--{{ catena.integra ? 'integro' : 'compromesso' }}">
+    {% if catena.integra %}
+      {{ 'Catena integra: @numero tracciature verificate.'|t({'@numero': catena.tracciature}) }}
+    {% else %}
+      {{ 'Catena interrotta alla tracciatura n. @id.'|t({'@id': catena.prima_rottura}) }}
+      {{ catena.motivo }}
+    {% endif %}
+  </p>
+
+  {% if azioni %}
+    <ul class="psiphos-azioni">
+      {% for azione in azioni %}<li>{{ azione }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if tracciature is empty %}
+    <p>{{ 'Nessuna tracciatura registrata per questa seduta.'|t }}</p>
+  {% else %}
+    <table>
+      <thead>
+        <tr>
+          <th>{{ 'Momento'|t }}</th>
+          <th>{{ 'Evento'|t }}</th>
+          <th>{{ 'Operatore'|t }}</th>
+          <th>{{ 'Circostanze'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for riga in tracciature %}
+          <tr{% if riga.anomalia %} class="psiphos-tracciature__anomalia"{% endif %}>
+            <td>{{ riga.momento|psiphos_marca }}</td>
+            <td>{{ riga.evento_denominazione }}</td>
+            <td>{{ riga.operatore }}</td>
+            <td>
+              {% for chiave, valore in riga.contesto_leggibile %}
+                {{ chiave|replace({'_': ' '}) }}: {{ valore }}{{ not loop.last ? '; ' }}
+              {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <p class="psiphos-verbale__nota">
+    {{ "Le tracciature documentano il procedimento, il verbale ne documenta l'esito. Nessuna annotazione riporta il contenuto di un voto a scrutinio segreto."|t }}
+  </p>
+
+</div>

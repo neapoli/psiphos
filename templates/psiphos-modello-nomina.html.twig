@@ -1,0 +1,89 @@
+{#
+/**
+ * @file
+ * Atto di nomina del manutentore a responsabile del trattamento.
+ *
+ * Titolare e responsabile sono compilati con i dati che il sito conosce:
+ * l'istituto dalla sede legale, il fornitore dalle impostazioni del modulo.
+ */
+#}
+{% include '@psiphos/psiphos-carta-istituto.html.twig' with {istituto: istituto} only %}
+
+<h1>{{ 'Atto di nomina a responsabile del trattamento'|t }}<br>
+  <span class="nota">{{ 'ai sensi dell\'art. 28 del Regolamento (UE) 2016/679'|t }}</span></h1>
+
+<p><strong>{{ 'Il titolare del trattamento'|t }}</strong><br>
+  {{ istituto.istituto }}{% if istituto.comune %}, {{ 'con sede in'|t }} {{ istituto.indirizzo }} — {{ istituto.comune }}{% if istituto.provincia %} ({{ istituto.provincia }}){% endif %}{% endif %}{% if istituto.codice_fiscale %}, {{ 'C.F.'|t }} {{ istituto.codice_fiscale }}{% endif %},<br>
+  {{ 'in persona del Dirigente scolastico pro tempore'|t }} <span class="vuoto">_______________________________</span>
+</p>
+
+<p style="text-align: center"><strong>{{ 'nomina'|t }}</strong></p>
+
+<p><strong>{{ 'Il responsabile del trattamento'|t }}</strong><br>
+  {% if fornitore.denominazione %}
+    {{ fornitore.denominazione }}{% if fornitore.partita_iva %}, {{ 'P. IVA / C.F.'|t }} {{ fornitore.partita_iva }}{% endif %}{% if fornitore.contatto %}, {{ fornitore.contatto }}{% endif %},<br>
+    {{ 'in persona di'|t }} <span class="vuoto">_______________________________</span>
+  {% else %}
+    <span class="vuoto">_______________________________________________________</span><br>
+    <span class="nota">{{ "(il fornitore non è indicato nelle impostazioni del modulo: indicarlo in /admin/config/psiphos perché l'atto risulti completo)"|t }}</span>
+  {% endif %}
+</p>
+
+<p>
+  {{ "responsabile del trattamento dei dati personali per le attività di seguito descritte, che il responsabile dichiara di essere in grado di svolgere fornendo garanzie sufficienti ai sensi dell'art. 28, paragrafo 1, del Regolamento."|t }}
+</p>
+
+<h2>{{ 'Art. 1 — Oggetto e durata'|t }}</h2>
+<p>{{ "Manutenzione tecnica del sito istituzionale @dominio: aggiornamento del sistema di gestione dei contenuti, dei moduli e del tema; installazione e configurazione di funzionalità richieste dal titolare; assistenza tecnica e risoluzione di malfunzionamenti."|t({'@dominio': dominio}) }}</p>
+<p>{{ "Durata: per la durata del contratto di manutenzione in essere fra le parti e dei suoi successivi rinnovi. Il presente atto cessa di produrre effetti alla cessazione di quel contratto, con gli obblighi di cui all'art. 11."|t }}</p>
+
+<h2>{{ 'Art. 2 — Natura e finalità'|t }}</h2>
+<p>{{ "Il trattamento consiste nell'accesso amministrativo al sito e ai dati in esso contenuti, per la sola finalità di mantenerlo funzionante, aggiornato e sicuro. Il responsabile non determina finalità e mezzi del trattamento, che restano del titolare."|t }}</p>
+
+<h2>{{ 'Art. 3 — Tipi di dati e categorie di interessati'|t }}</h2>
+<p>{{ "Dati anagrafici e di contatto, credenziali di accesso, dati relativi alla partecipazione alle sedute degli organi collegiali e ai voti espressi in forma palese, contenuti pubblicati. Interessati: personale docente e ATA, componenti degli organi collegiali, utenti del sito."|t }}</p>
+
+<h2>{{ 'Art. 4 — Istruzioni del titolare'|t }}</h2>
+<p>{{ "Il responsabile tratta i dati soltanto su istruzione documentata del titolare, nei limiti dell'art. 1, e informa immediatamente il titolare qualora un'istruzione violi il Regolamento o altre disposizioni sulla protezione dei dati."|t }}</p>
+
+<h2>{{ 'Art. 5 — Riservatezza'|t }}</h2>
+<p>{{ "Il responsabile garantisce che le persone che operano sotto la propria autorità e sono da esso autorizzate al trattamento — collaboratori, tirocinanti, professionisti incaricati — si siano impegnate alla riservatezza o abbiano un adeguato obbligo legale di riservatezza."|t }}</p>
+<p>{{ "Restano estranee al presente articolo le persone che il titolare autorizzi nell'ambito della propria organizzazione, ivi compresi coloro ai quali il titolare conferisca privilegi amministrativi sul sito: di esse risponde il titolare ai sensi dell'art. 29 del Regolamento."|t }}</p>
+
+<h2>{{ 'Art. 6 — Misure di sicurezza'|t }}</h2>
+<p>{{ "Il responsabile adotta le misure tecniche e organizzative adeguate di cui all'art. 32 su quanto è nella propria disponibilità, in particolare: credenziali personali e non condivise per l'accesso al sito e ai pannelli di gestione; secondo fattore di autenticazione ove i sistemi che utilizza lo consentano; cifratura dei supporti della postazione dalla quale opera; aggiornamento tempestivo dei propri sistemi."|t }}</p>
+<p>{{ "Quanto all'accesso amministrativo al sito, il secondo fattore di autenticazione è erogato da un componente del sito medesimo e non dal responsabile: ove non risulti disponibile, il responsabile ne informa il titolare, al quale spetta disporne l'adozione."|t }}</p>
+
+<h2>{{ 'Art. 7 — Copie in ambiente locale'|t }}</h2>
+<p>{{ "Il responsabile è autorizzato a duplicare la banca dati e i file del sito nel proprio ambiente di prova, per le sole verifiche preliminari agli aggiornamenti. Le copie sono conservate cifrate, non sono rese raggiungibili dall'esterno e sono cancellate quando non più necessarie e comunque alla cessazione dell'incarico."|t }}</p>
+
+<h2>{{ 'Art. 8 — Sub-responsabili'|t }}</h2>
+<p>{{ "Il responsabile non ricorre ad altri responsabili senza previa autorizzazione scritta del titolare."|t }}</p>
+
+<h2>{{ 'Art. 9 — Assistenza al titolare'|t }}</h2>
+<p>{{ "Il responsabile assiste il titolare, nei limiti di quanto conosce, nel dare seguito alle richieste di esercizio dei diritti degli interessati, nella valutazione d'impatto e nella consultazione preventiva."|t }}</p>
+
+<h2>{{ 'Art. 10 — Violazioni dei dati personali'|t }}</h2>
+<p>{{ "Il responsabile informa il titolare senza ingiustificato ritardo e comunque entro"|t }}
+  <span class="vuoto">______</span> {{ "ore da quando ne viene a conoscenza, all'indirizzo"|t }}
+  {{ istituto.pec ?: '_______________________________' }},
+  {{ "fornendo gli elementi necessari alla notifica di cui all'art. 33."|t }}</p>
+
+<h2>{{ 'Art. 11 — Restituzione o cancellazione'|t }}</h2>
+<p>{{ "Alla cessazione dell'incarico il responsabile, a scelta del titolare, restituisce o cancella i dati e le copie esistenti, salvo obblighi di conservazione di legge, e ne dà conferma scritta."|t }}</p>
+
+<h2>{{ 'Art. 12 — Dimostrazione della conformità'|t }}</h2>
+<p>{{ "Il responsabile mette a disposizione del titolare le informazioni necessarie a dimostrare il rispetto degli obblighi del presente atto e consente e contribuisce alle verifiche del titolare o di un incaricato da questi designato."|t }}</p>
+<p>{{ "La verifica si svolge con modalità concordate: previo avviso scritto di almeno quindici giorni, in orario di lavoro, di norma non più di una volta l'anno salvo che sia seguita a una violazione dei dati o a un inadempimento contestato, e limitatamente ai trattamenti svolti per conto del titolare. Il responsabile non è tenuto a consentire l'accesso a dati, sistemi o documenti relativi ad altri titolari per i quali operi. L'obbligo si intende assolto quando il responsabile fornisce la documentazione idonea a dimostrare quanto richiesto, senza necessità di accesso ai propri locali o sistemi."|t }}</p>
+
+<h2>{{ 'Art. 13 — Attività escluse'|t }}</h2>
+<p>{{ "Sono estranee al presente incarico e restano di competenza di altri soggetti: l'infrastruttura che ospita il sito, oggetto di distinta nomina del fornitore dell'hosting; la conservazione a norma dei documenti informatici; le decisioni organizzative del titolare, ivi comprese la composizione degli aventi diritto alle sedute, l'adozione del Regolamento d'istituto e la valutazione d'impatto."|t }}</p>
+
+<h2>{{ 'Art. 14 — Registro'|t }}</h2>
+<p>{{ "Il responsabile tiene il registro delle categorie di attività di trattamento svolte per conto del titolare, ai sensi dell'art. 30, paragrafo 2."|t }}</p>
+
+<div class="firma">
+  <p>{{ 'Luogo e data'|t }} <span class="vuoto">_______________________________</span></p>
+  <p>{{ 'Il titolare del trattamento'|t }} <span class="vuoto">_______________________________</span></p>
+  <p>{{ 'Per accettazione, il responsabile'|t }} <span class="vuoto">_______________________________</span></p>
+</div>

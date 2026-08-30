@@ -1,0 +1,90 @@
+{#
+/**
+ * @file
+ * Esito della verifica di un verbale sigillato.
+ *
+ * Tre domande, non una. Le prime due riguardano ciò che è stato conservato —
+ * l'esportazione e il file — e sono quelle che contano davanti a chi
+ * controlla. La terza riguarda la banca dati, e ha peso diverso: una
+ * differenza può nascere da una correzione legittima che il documento
+ * sigillato non recepisce e non deve recepire.
+ *
+ * Variabili:
+ * - verbale: entità del verbale.
+ * - sigillato: TRUE se il verbale conserva la propria esportazione.
+ * - contenuto_integro: l'esportazione conservata è quella sigillata.
+ * - contenuto_corrispondente: la banca dati racconta ancora la stessa seduta.
+ * - documento_integro: il file è quello prodotto al sigillo.
+ * - impronta_*: valori a confronto.
+ * - azioni: collegamenti operativi.
+ */
+#}
+<div class="psiphos-verifica">
+
+  {% if azioni %}
+    <ul class="psiphos-azioni">
+      {% for azione in azioni %}<li>{{ azione }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if not sigillato %}
+    <p class="psiphos-verifica__esito--compromesso">
+      {{ "Questo verbale non conserva la propria esportazione: non è verificabile."|t }}
+    </p>
+    <p class="psiphos-verbale__nota">
+      {{ "Accade ai verbali sigillati da una versione del modulo precedente all'introduzione dell'esportazione conservata, che ricostruiva i dati a ogni richiesta anziché conservarli. Vanno considerati privi di attestazione di integrità."|t }}
+    </p>
+  {% else %}
+
+    <h2>{{ 'Esportazione conservata'|t }}</h2>
+    <p class="psiphos-verifica__esito--{{ contenuto_integro ? 'integro' : 'compromesso' }}">
+      {{ contenuto_integro
+        ? "L'esportazione conservata è esattamente quella sigillata."|t
+        : "L'esportazione conservata NON è quella sigillata."|t }}
+    </p>
+    <dl>
+      <dt>{{ 'Impronta registrata al sigillo'|t }}</dt>
+      <dd class="psiphos-verbale__impronta">{{ impronta_contenuto_registrata ?: '—' }}</dd>
+      <dt>{{ "Impronta dell'esportazione, ricalcolata ora"|t }}</dt>
+      <dd class="psiphos-verbale__impronta">{{ impronta_contenuto_ricalcolata ?: '—' }}</dd>
+    </dl>
+    <p class="psiphos-verbale__nota">
+      {{ "È la verifica che vale: si può rifare fuori da questo sito, calcolando lo SHA-256 del file esportato con un qualunque strumento."|t }}
+    </p>
+
+    <h2>{{ 'Documento conservato'|t }}</h2>
+    <p class="psiphos-verifica__esito--{{ documento_integro ? 'integro' : 'compromesso' }}">
+      {{ documento_integro
+        ? 'Il documento è quello prodotto al momento del sigillo.'|t
+        : 'Il documento NON corrisponde a quello prodotto al momento del sigillo.'|t }}
+    </p>
+    <dl>
+      <dt>{{ 'Impronta registrata al sigillo'|t }}</dt>
+      <dd class="psiphos-verbale__impronta">{{ impronta_documento_registrata ?: '—' }}</dd>
+      <dt>{{ 'Impronta del file, ricalcolata ora'|t }}</dt>
+      <dd class="psiphos-verbale__impronta">{{ impronta_documento_ricalcolata ?: '—' }}</dd>
+      <dt>{{ 'Formato di archiviazione'|t }}</dt>
+      <dd>{{ verbale.formato.value ?: '—' }}</dd>
+    </dl>
+
+    <h2>{{ 'Corrispondenza con la banca dati'|t }}</h2>
+    <p class="psiphos-verifica__esito--{{ contenuto_corrispondente ? 'integro' : 'attenzione' }}">
+      {{ contenuto_corrispondente
+        ? 'La banca dati racconta ancora la stessa seduta del documento.'|t
+        : 'La banca dati non racconta più esattamente la stessa seduta del documento.'|t }}
+    </p>
+    {% if not contenuto_corrispondente %}
+      <dl>
+        <dt>{{ "Impronta dell'esportazione conservata"|t }}</dt>
+        <dd class="psiphos-verbale__impronta">{{ impronta_contenuto_ricalcolata ?: '—' }}</dd>
+        <dt>{{ 'Impronta dei dati attuali'|t }}</dt>
+        <dd class="psiphos-verbale__impronta">{{ impronta_dati_attuali ?: '—' }}</dd>
+      </dl>
+      <p class="psiphos-verbale__nota">
+        {{ "Non è di per sé una manomissione. Un cognome rettificato, una traduzione rivista o un aggiornamento del modulo bastano a produrre questa differenza: il documento sigillato non recepisce quelle modifiche, ed è giusto che non le recepisca. Il valore del verbale resta attestato dalle due verifiche precedenti; questa serve a sapere che i dati vivi si sono mossi, e le tracciature dicono se qualcuno li ha mossi."|t }}
+      </p>
+    {% endif %}
+
+  {% endif %}
+
+</div>

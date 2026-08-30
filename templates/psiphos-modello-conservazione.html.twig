@@ -1,0 +1,43 @@
+{#
+/**
+ * @file
+ * Richiesta al fornitore del protocollo informatico, precompilata.
+ *
+ * Serve ad accertare se l'istituto disponga già di un canale di conservazione
+ * a norma, che nella maggioranza dei casi è compreso nel contratto in essere.
+ */
+#}
+{% include '@psiphos/psiphos-carta-istituto.html.twig' with {istituto: istituto} only %}
+
+<div class="destinatario">
+  <p>{{ 'Spett.le'|t }}</p>
+  <p class="vuoto">_______________________________________</p>
+  <p class="nota">{{ '(fornitore del protocollo informatico e della gestione documentale)'|t }}</p>
+</div>
+
+<p class="oggetto">
+  {{ "Oggetto: conservazione a norma dei verbali degli organi collegiali — richiesta di informazioni"|t }}
+</p>
+
+<p>
+  {{ "Questa istituzione scolastica sta adottando un sistema per lo svolgimento a distanza delle sedute degli organi collegiali con voto deliberativo, in attuazione della nota MIM prot. 3803 del 30/06/2026. Il sistema produce verbali ed estratti di deliberazione in PDF/A, con i metadati previsti dalle Linee guida AgID e impronte SHA-256 verificabili. Poiché il §7 dell'allegato tecnico impone che tali documenti siano conservati nel rispetto delle medesime Linee guida, si chiede quanto segue."|t }}
+</p>
+
+<ol>
+  <li>{{ "Se il contratto in essere comprenda la conservazione a norma presso un conservatore accreditato e, in tal caso, quale."|t }}</li>
+  <li>{{ "Con quale procedura si versi in conservazione un documento prodotto al di fuori del Vostro applicativo, quale è il verbale descritto."|t }}</li>
+  <li>{{ "Quali metadati richieda il pacchetto di versamento, e in quale formato, per stabilirne la corrispondenza con quelli di cui i nostri documenti sono già corredati: identificativo, tipologia documentale, data di chiusura, modalità di formazione, oggetto, soggetto produttore."|t }}</li>
+</ol>
+
+<p>
+  {{ "Si chiede cortesemente un riscontro su ciascun punto, comprensivo delle risposte negative: anche la dichiarazione che una misura non è prevista serve a individuare gli adempimenti residui a carico di questa istituzione. Si chiede di volerlo far pervenire entro il"|t }}
+  <span class="vuoto">_______________</span>,
+  {{ "dovendo completare gli adempimenti preliminari alla prima seduta deliberativa; ove il termine non fosse compatibile con i Vostri tempi, sarà sufficiente indicarne uno diverso."|t }}
+</p>
+
+<p>{{ 'Distinti saluti.'|t }}</p>
+
+<div class="firma">
+  <p>{{ 'Luogo e data'|t }} <span class="vuoto">_______________________________</span></p>
+  <p>{{ 'Il Dirigente scolastico'|t }} <span class="vuoto">_______________________________</span></p>
+</div>

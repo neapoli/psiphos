@@ -1,0 +1,34 @@
+psiphos.settings:
+  title: 'Psíphos — sedute collegiali'
+  description: 'Configura lo svolgimento a distanza delle sedute collegiali deliberative.'
+  route_name: psiphos.settings
+  parent: system.admin_config_system
+
+psiphos.sedute:
+  title: 'Sedute collegiali'
+  description: 'Convocazioni, ordine del giorno, presenze e delibere.'
+  route_name: entity.psiphos_seduta.collection
+  parent: system.admin_content
+
+psiphos.resoconti:
+  title: 'Psíphos'
+  description: "Documentazione tecnica e attestazione di conformità all'allegato tecnico della nota MIM prot. 3803 del 30/06/2026."
+  route_name: psiphos.resoconti
+  parent: system.admin_reports
+
+# L'ordine è quello in cui le due voci si usano: prima si compiono gli
+# adempimenti che i documenti descrivono, poi si produce l'attestazione che ne
+# riferisce l'esito. Invertirle inviterebbe a firmare prima di aver fatto.
+psiphos.documentazione:
+  title: "Documenti per l'istituzione"
+  description: "Documentazione tecnica, modelli di atto e adempimenti da compiere prima della prima seduta deliberativa."
+  route_name: psiphos.documentazione
+  parent: psiphos.resoconti
+  weight: 0
+
+psiphos.conformita:
+  title: 'Attestazione di conformità'
+  description: "Stato di attuazione dei requisiti dell'allegato tecnico nella configurazione in essere, da allegare alla dichiarazione del fornitore."
+  route_name: psiphos.conformita
+  parent: psiphos.resoconti
+  weight: 10

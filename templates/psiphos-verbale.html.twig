@@ -1,0 +1,351 @@
+{#
+/**
+ * @file
+ * Verbale di seduta collegiale.
+ *
+ * Stessa resa in pagina e nel documento da conservare: il contenuto proviene
+ * da un'unica struttura canonica, così quanto si legge a schermo, quanto
+ * finisce nel PDF e quanto viene esportato non possono divergere.
+ *
+ * Variabili:
+ * - verbale: entità del verbale.
+ * - dati: struttura canonica della seduta.
+ * - documento: TRUE quando la resa è destinata al PDF.
+ * - sigillato: TRUE quando il verbale non è più modificabile.
+ * - estratti: collegamenti agli estratti di delibera, per identificativo.
+ * - azioni: collegamenti operativi, assenti nella resa destinata al PDF.
+ */
+#}
+<article class="psiphos-verbale">
+
+  {# I comandi precedono l'intestazione: su un verbale sigillato si arriva
+     per scaricare il documento o per tornare alla seduta, e la lettura del
+     testo viene dopo. Non compaiono nel documento da conservare: fra dieci
+     anni quegli indirizzi non esisteranno più. #}
+  {% if azioni and not documento %}
+    <ul class="psiphos-azioni psiphos-azioni--testata">
+      {% for azione in azioni %}<li>{{ azione }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% include '@psiphos/psiphos-carta-intestata.html.twig' with {carta: dati.metadati.intestazione} only %}
+
+  <header class="psiphos-verbale__intestazione">
+    <h1>{{ dati.metadati.oggetto }}</h1>
+    <p>
+      {{ dati.seduta.organo_denominazione }}
+      {% if dati.seduta.numero %} — {{ 'seduta n.'|t }} {{ dati.seduta.numero }}{% endif %}
+      {% if dati.seduta.anno_scolastico %} — {{ 'a.s.'|t }} {{ dati.seduta.anno_scolastico }}{% endif %}
+    </p>
+  </header>
+
+  {#
+    Nessun titolo di sezione qui: la testata ha appena detto di quale organo e
+    di quale seduta si tratta, e «Convocazione e costituzione» lo ripeteva con
+    altre parole prima di elencare gli stessi dati.
+  #}
+  {#
+    Etichetta e valore sulla stessa riga: sono coppie brevi, e su due righe
+    ciascuna occupavano il doppio dello spazio senza guadagnare in
+    leggibilità. Ogni coppia sta in un div — che l'HTML ammette dentro una
+    lista di definizioni — così l'elenco resta una lista di definizioni per
+    chi la ascolta con un lettore di schermo, e va a capo per chi la legge.
+  #}
+  <dl class="psiphos-verbale__dati">
+    <div>
+      <dt>{{ 'Svolgimento'|t }}</dt>
+      <dd>{#- -#}
+        {{- dati.seduta.modalita == 'mista' ? 'Seduta mista, in presenza e a distanza'|t : 'Seduta interamente a distanza'|t }}
+        {%- if dati.seduta.strumento_videoconferenza %} — {{ 'collegamento:'|t }} {{ dati.seduta.strumento_videoconferenza }}{% endif -%}
+      </dd>
+    </div>
+
+    {% if dati.metadati.riferimento_regolamento %}
+      <div>
+        <dt>{{ "Riferimento al Regolamento d'istituto"|t }}</dt>
+        <dd>{{ dati.metadati.riferimento_regolamento }}</dd>
+      </div>
+    {% endif %}
+
+    <div>
+      <dt>{{ 'Convocata per'|t }}</dt>
+      <dd>{{ dati.seduta.convocata_per|psiphos_istante }}</dd>
+    </div>
+
+    <div>
+      <dt>{{ 'Apertura e chiusura dei lavori'|t }}</dt>
+      <dd>{{ dati.seduta.aperta_il|psiphos_istante }} — {{ dati.seduta.chiusa_il|psiphos_istante }}</dd>
+    </div>
+
+    <div>
+      <dt>{{ 'Presidenza'|t }}</dt>
+      <dd>{{ dati.seduta.presidente }}</dd>
+    </div>
+
+    <div>
+      <dt>{{ 'Segretario verbalizzante'|t }}</dt>
+      <dd>{{ dati.seduta.segretario }}</dd>
+    </div>
+
+    <div>
+      <dt>{{ 'Quorum costitutivo'|t }}</dt>
+      <dd>{#- -#}
+        {{- 'Presenti @presenti su @aventi aventi diritto; richiesti @minimi.'|t({
+          '@presenti': dati.costituzione.presenti,
+          '@aventi': dati.costituzione.aventi_diritto,
+          '@minimi': dati.costituzione.presenti_minimi,
+        }) }}
+        <strong>{{ dati.costituzione.validamente_costituita ? 'Seduta validamente costituita.'|t : 'Seduta non validamente costituita.'|t }}</strong>
+      </dd>
+    </div>
+  </dl>
+
+  <h2>{{ 'Registro delle presenze'|t }}</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>{{ 'Avente diritto'|t }}</th>
+        <th>{{ 'Posizione'|t }}</th>
+        <th>{{ 'Ingresso'|t }}</th>
+        <th>{{ 'Uscita'|t }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for riga in dati.registro_presenze %}
+        <tr>
+          <td>{{ riga.nominativo }}</td>
+          <td>{{ riga.posizione_denominazione }}{% if riga.giustificazione %} ({{ riga.giustificazione }}){% endif %}</td>
+          <td>{{ riga.ingresso|psiphos_istante }}</td>
+          <td>{{ riga.uscita|psiphos_istante }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {#
+    Nel documento l'ordine del giorno apre una pagina nuova: è il punto in cui
+    si smette di descrivere la seduta e si comincia a riferirne il contenuto,
+    e chi cerca un argomento lo cerca da lì.
+  #}
+  <h2 class="psiphos-verbale__odg-titolo">{{ 'Ordine del giorno'|t }}</h2>
+  {#
+    Elenco fitto: qui i punti si scorrono per ritrovare un argomento, non si
+    leggono uno per uno, e la spaziatura da titolo di sezione li allontanava
+    al punto da farli sembrare capitoli.
+  #}
+  <div class="psiphos-verbale__odg">
+  {% for punto in dati.ordine_del_giorno %}
+    {#
+      Il punto porta accanto i numeri delle delibere che ne sono uscite:
+      è così che viene richiamato negli atti successivi, e ritrovarlo in
+      questa forma nel verbale evita di doverli cercare uno per uno.
+    #}
+    {% set numeri_delibera = punto.votazioni|map(v => v.numero)|filter(n => n is not empty) %}
+    <h3>
+      {{ punto.numero }}. {{ punto.oggetto }}
+      {%- if numeri_delibera|length %}
+        {{ ' ' }}({{ numeri_delibera|length > 1 ? 'Delibere n.'|t : 'Delibera n.'|t }}
+        {{- ' ' }}{{ numeri_delibera|join(', ') }})
+      {%- endif %}
+      {%- if not punto.deliberativo %}
+        {{ ' ' }}<span class="psiphos-verbale__nota">({{ 'punto non deliberativo'|t }})</span>
+      {%- endif %}
+    </h3>
+    {% if punto.illustrazione %}
+      <div class="psiphos-verbale__illustrazione">{{ punto.illustrazione|psiphos_testo(punto.illustrazione_formato) }}</div>
+    {% endif %}
+  {% endfor %}
+  </div>
+
+  {% if dati.svolgimento %}
+    <h2>{{ 'Svolgimento della seduta'|t }}</h2>
+    <div class="psiphos-verbale__svolgimento">{{ dati.svolgimento|psiphos_testo(dati.svolgimento_formato) }}</div>
+  {% endif %}
+
+  {% if dati.seduta.note_procedurali %}
+    <h2>{{ 'Note procedurali e malfunzionamenti'|t }}</h2>
+    {#
+      Il contenitore serve: un testo redatto senza formato dichiarato esce
+      come testo nudo, e senza un blocco che lo raccolga la spaziatura dopo la
+      riga di sezione dipende da come il generatore di PDF decide di trattarlo.
+    #}
+    <div class="psiphos-verbale__svolgimento">{{ dati.seduta.note_procedurali|psiphos_testo(dati.seduta.note_procedurali_formato) }}</div>
+  {% endif %}
+
+  {#
+    Le votazioni stanno qui e non dentro l'ordine del giorno: l'ordine del
+    giorno è ciò su cui la seduta è stata convocata, le delibere sono ciò che
+    la seduta ha prodotto. Tenerle annidate nei punti costringeva a leggere
+    l'ordine del giorno interrotto da tabelle di scrutinio, e a cercare una
+    delibera scorrendo l'ordine del giorno anziché l'elenco delle delibere.
+
+    Ogni votazione richiama il punto da cui proviene, perché letta qui non ha
+    più il punto sopra a darle contesto.
+  #}
+  {% set punti_deliberati = (dati.ordine_del_giorno ?? [])|filter(p => p.votazioni|length > 0) %}
+  {% if punti_deliberati|length %}
+    <h2>{{ 'Delibere'|t }}</h2>
+
+    <div class="psiphos-verbale__delibere">
+    {% for punto in punti_deliberati %}
+      <h3>{{ 'Punto @numero — @oggetto'|t({'@numero': punto.numero, '@oggetto': punto.oggetto}) }}</h3>
+
+      {% for votazione in punto.votazioni %}
+        {#
+          Etichetta e quesito su una riga sola nel sorgente: il generatore di
+          PDF non accorpa gli spazi attraverso il confine di un elemento, e
+          l'a capo prima di «</strong>» diventava un secondo spazio stampato.
+        #}
+        <p class="psiphos-verbale__quesito">
+          <strong>{% if votazione.numero %}{{ 'Delibera n. @numero'|t({'@numero': votazione.numero}) }}{% else %}{{ 'Votazione'|t }}{% endif %}:</strong>
+          {{ votazione.quesito }}
+        </p>
+        <dl class="psiphos-verbale__dati">
+          <div>
+            <dt>{{ 'Modalità'|t }}</dt>
+            <dd>{#- -#}
+              {{ votazione.tipo_voto == 'segreto' ? 'voto a scrutinio segreto'|t : 'voto palese'|t }},
+              {{ votazione.regola_maggioranza_denominazione|lower }}
+            </dd>
+          </div>
+
+          <div>
+            <dt>{{ 'Partecipazione'|t }}</dt>
+            <dd>{{ 'Votanti @votanti su @presenti presenti, @aventi aventi diritto.'|t({
+              '@votanti': votazione.votanti,
+              '@presenti': votazione.presenti_al_voto,
+              '@aventi': votazione.aventi_diritto_al_voto,
+            }) }}</dd>
+          </div>
+
+          {% if votazione.conteggio %}
+            <div>
+              <dt>{{ 'Esito dello scrutinio'|t }}</dt>
+              <dd>{#- -#}
+                {% for voce, numero in votazione.conteggio -%}
+                  {{ votazione.conteggio_denominazioni[voce]|default(voce) }}: {{ numero }}{{ not loop.last ? '; ' }}
+                {% endfor %}
+              </dd>
+            </div>
+          {% endif %}
+
+          {% if votazione.ripetizione_di_quesito %}
+            <div>
+              <dt>{{ 'Ripetizione'|t }}</dt>
+              <dd>{{ 'Ripete la votazione annullata «@quesito».'|t({'@quesito': votazione.ripetizione_di_quesito}) }}</dd>
+            </div>
+          {% endif %}
+
+          <div>
+            <dt>{{ 'Deliberazione'|t }}</dt>
+            <dd>{#- -#}
+              <strong>{{ votazione.esito_denominazione ?: votazione.stato }}</strong>
+              {% if votazione.opzioni_prevalenti %}
+                — {{ 'proclamati:'|t }}
+                {% for chiave in votazione.opzioni_prevalenti %}
+                  {{ votazione.conteggio_denominazioni[chiave]|default(chiave) }}{{ not loop.last ? ', ' }}
+                {% endfor %}
+              {% endif %}
+            </dd>
+          </div>
+
+          {% if votazione.motivazione %}
+            <div>
+              <dt>{{ 'Sospensione o annullamento'|t }}</dt>
+              <dd>{{ votazione.motivazione|psiphos_testo(votazione.motivazione_formato) }}</dd>
+            </div>
+          {% endif %}
+
+          {% if votazione.tipo_voto == 'palese' and votazione.registro_votanti %}
+            <div>
+              <dt>{{ 'Voti espressi'|t }}</dt>
+              <dd class="psiphos-verbale__elenco">{#- -#}
+                {% for riga in votazione.registro_votanti -%}
+                  {{ riga.nominativo }}: {{ riga.voto }}{{ not loop.last ? '; ' }}
+                {% endfor %}
+              </dd>
+            </div>
+          {% elseif votazione.registro_votanti %}
+            <div>
+              <dt>{{ 'Hanno partecipato al voto'|t }}</dt>
+              <dd class="psiphos-verbale__elenco">{#- -#}
+                {% for riga in votazione.registro_votanti -%}{{ riga.nominativo }}{{ not loop.last ? '; ' }}{% endfor %}
+                <span class="psiphos-verbale__nota">
+                  {{ '— trattandosi di scrutinio segreto il verbale attesta la partecipazione al voto e non il suo contenuto.'|t }}
+                </span>
+              </dd>
+            </div>
+          {% endif %}
+
+          {% if votazione.sigillo_urna %}
+            <div>
+              <dt>{{ "Sigillo dell'urna"|t }}</dt>
+              <dd class="psiphos-verbale__impronta">{{ votazione.sigillo_urna }}</dd>
+            </div>
+          {% endif %}
+
+          {% if not documento and estratti[votazione.identificativo] is defined %}
+            <div>
+              <dt>{{ 'Atto'|t }}</dt>
+              <dd>{{ estratti[votazione.identificativo] }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+
+        {#
+          Le delibere si susseguono senza un titolo che le separi: un filetto
+          breve e centrato dice dove finisce un atto e comincia il successivo,
+          senza pesare come una divisione di sezione. Non dopo l'ultima, dove
+          separerebbe le delibere dal colophon.
+        #}
+        {% if not (loop.last and loop.parent.loop.last) %}
+          <hr class="psiphos-verbale__divisore">
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+    </div>
+  {% endif %}
+
+  {#
+    Dati di conservazione a piè di pagina, come sugli estratti di delibera:
+    non sono ciò che la seduta ha deliberato, e in coda al corpo pesavano come
+    se fossero l'ultima sezione del verbale anziché il suo colophon.
+  #}
+  <footer class="psiphos-piede">
+    <p>
+      <span class="psiphos-piede__voce">{{ 'Identificativo del documento'|t }}</span>
+      <span class="psiphos-verbale__impronta">{{ dati.metadati.identificativo }}</span>
+    </p>
+
+    {% if sigillato %}
+      <p>
+        <span class="psiphos-piede__voce">{{ 'Impronta del contenuto (SHA-256)'|t }}</span>
+        <span class="psiphos-verbale__impronta">{{ verbale.impronta_contenuto.value }}</span>
+      </p>
+
+      {% if not documento %}
+        <p>
+          <span class="psiphos-piede__voce">{{ 'Impronta del documento (SHA-256)'|t }}</span>
+          <span class="psiphos-verbale__impronta">{{ verbale.impronta_pdf.value }}</span>
+          <span class="psiphos-piede__voce">{{ 'Formato'|t }}</span>
+          {{ verbale.formato.value }}
+        </p>
+      {% endif %}
+
+      <p>
+        {{ 'Sigillato il @quando da @chi.'|t({
+          '@quando': verbale.sigillato_il.value|psiphos_marca,
+          '@chi': sigillante,
+        }) }}
+        {% if documento %}
+          {{ "L'impronta di questo file e il formato di archiviazione sono registrati sul verbale e nella sua esportazione strutturata: un documento non può contenere la propria impronta."|t }}
+        {% endif %}
+      </p>
+    {% else %}
+      <p>{{ 'Bozza non sigillata: il documento non è ancora conservabile.'|t }}</p>
+    {% endif %}
+
+    <p>{{ dati.metadati.riferimento_normativo }}</p>
+  </footer>
+
+</article>

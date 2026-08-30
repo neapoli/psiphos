@@ -1,0 +1,88 @@
+psiphos.settings:
+  type: config_object
+  label: 'Impostazioni Psíphos'
+  mapping:
+    fornitore:
+      type: mapping
+      label: 'Fornitore che sottoscrive la dichiarazione di conformità (allegato tecnico §9)'
+      mapping:
+        denominazione:
+          type: label
+          label: 'Denominazione del fornitore o partner tecnologico'
+        partita_iva:
+          type: string
+          label: 'Partita IVA o codice fiscale del fornitore'
+        contatto:
+          type: label
+          label: 'Recapito del fornitore'
+    hosting:
+      type: mapping
+      label: "Fornitore dell'infrastruttura che ospita il sito (allegato tecnico §5)"
+      mapping:
+        denominazione:
+          type: label
+          label: "Denominazione del fornitore dell'infrastruttura"
+        partita_iva:
+          type: string
+          label: 'Partita IVA o codice fiscale del fornitore'
+        sede:
+          type: label
+          label: 'Sede legale del fornitore'
+        contatto:
+          type: label
+          label: 'Recapito o PEC del fornitore'
+        ubicazione_dati:
+          type: label
+          label: 'Paese di ubicazione dei dati, come dichiarato dal fornitore'
+        nomina_protocollo:
+          type: string
+          label: "Protocollo dell'atto di nomina a responsabile del trattamento"
+        nomina_data:
+          type: string
+          label: "Data dell'atto di nomina a responsabile del trattamento"
+        riscontro_protocollo:
+          type: string
+          label: 'Protocollo del riscontro alla richiesta di documentazione'
+        riscontro_data:
+          type: string
+          label: 'Data del riscontro alla richiesta di documentazione'
+    autenticazione:
+      type: mapping
+      label: 'Identificazione e autenticazione (allegato tecnico §3)'
+      mapping:
+        livello:
+          type: string
+          label: "Livello di autenticazione richiesto per l'espressione del voto"
+        provider_forte:
+          type: string
+          label: "Identificativo del modulo che eroga l'autenticazione forte"
+        etichetta_provider_forte:
+          type: label
+          label: "Etichetta mostrata all'utente per l'autenticazione forte"
+    sessione:
+      type: mapping
+      label: 'Gestione delle sessioni (allegato tecnico §3.4)'
+      mapping:
+        timeout_inattivita:
+          type: integer
+          label: "Interruzione automatica della presenza per assenza di contatto dal dispositivo, in secondi"
+        sessione_esclusiva:
+          type: boolean
+          label: 'Impedire più sessioni di voto simultanee per lo stesso avente diritto'
+    conservazione:
+      type: mapping
+      label: 'Conservazione documentale (allegato tecnico §7)'
+      mapping:
+        pdfa_attivo:
+          type: boolean
+          label: 'Convertire i verbali nel formato di conservazione PDF/A-2B'
+        ghostscript:
+          type: string
+          label: "Percorso dell'eseguibile Ghostscript che effettua la conversione"
+    audit:
+      type: mapping
+      label: 'Tracciature tecniche (allegato tecnico §2 e §5)'
+      mapping:
+        ritenzione_giorni:
+          type: integer
+          label: 'Giorni di conservazione delle tracciature dopo la verbalizzazione della seduta'

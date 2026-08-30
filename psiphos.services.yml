@@ -1,0 +1,133 @@
+services:
+  psiphos.registro_audit:
+    class: Drupal\psiphos\Service\RegistroAudit
+    arguments:
+      - '@database'
+      - '@current_user'
+      - '@datetime.time'
+      - '@config.factory'
+
+  psiphos.urna:
+    class: Drupal\psiphos\Service\Urna
+    arguments:
+      - '@database'
+      - '@entity_type.manager'
+      - '@datetime.time'
+      - '@psiphos.registro_audit'
+
+  psiphos.scrutinio:
+    class: Drupal\psiphos\Service\Scrutinio
+    arguments:
+      - '@psiphos.urna'
+
+  psiphos.aula:
+    class: Drupal\psiphos\Service\Aula
+    arguments:
+      - '@entity_type.manager'
+      - '@config.factory'
+      - '@datetime.time'
+      - '@request_stack'
+      - '@psiphos.registro_audit'
+
+  psiphos.costruttore_verbale:
+    class: Drupal\psiphos\Service\CostruttoreVerbale
+    arguments:
+      - '@entity_type.manager'
+      - '@config.factory'
+      - '@datetime.time'
+      - '@psiphos.urna'
+      - '@psiphos.scrutinio'
+      - '@psiphos.intestazione_istituto'
+
+  psiphos.conservazione_documento:
+    class: Drupal\psiphos\Service\ConservazioneDocumento
+    arguments:
+      - '@plugin.manager.entity_print.print_engine'
+      - '@file_system'
+      - '@config.factory'
+      - '@logger.channel.psiphos'
+
+  psiphos.intestazione_istituto:
+    class: Drupal\psiphos\Service\IntestazioneIstituto
+    arguments:
+      - '@entity_type.manager'
+      - '@entity_field.manager'
+      - '@config.factory'
+      - '@request_stack'
+
+  psiphos.costruttore_atto:
+    class: Drupal\psiphos\Service\CostruttoreAtto
+    arguments:
+      - '@entity_type.manager'
+      - '@config.factory'
+      - '@datetime.time'
+      - '@psiphos.scrutinio'
+      - '@psiphos.intestazione_istituto'
+
+  psiphos.verbalizzazione:
+    class: Drupal\psiphos\Service\Verbalizzazione
+    arguments:
+      - '@entity_type.manager'
+      - '@psiphos.costruttore_verbale'
+      - '@psiphos.costruttore_atto'
+      - '@psiphos.conservazione_documento'
+      - '@renderer'
+      - '@file_system'
+      - '@file.repository'
+      - '@datetime.time'
+
+  logger.channel.psiphos:
+    parent: logger.channel_base
+    arguments: ['psiphos']
+
+  psiphos.twig:
+    class: Drupal\psiphos\TwigEstensione
+    arguments:
+      - '@date.formatter'
+    tags:
+      - { name: twig.extension }
+
+  psiphos.attestazione_conformita:
+    class: Drupal\psiphos\Service\AttestazioneConformita
+    arguments:
+      - '@config.factory'
+      - '@psiphos.conservazione_documento'
+      - '@psiphos.registro_audit'
+      - '@extension.list.module'
+      - '@datetime.time'
+      - '@request_stack'
+      - '@module_handler'
+      - '@state'
+
+  psiphos.route_subscriber:
+    class: Drupal\psiphos\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  psiphos.accesso_verbale_seduta:
+    class: Drupal\psiphos\Access\AccessoVerbaleSeduta
+    arguments:
+      - '@psiphos.verbalizzazione'
+    tags:
+      - { name: access_check, applies_to: _psiphos_verbale_seduta }
+
+  psiphos.accesso_redazione_atto:
+    class: Drupal\psiphos\Access\AccessoRedazioneAtto
+    tags:
+      - { name: access_check, applies_to: _psiphos_redazione_atto }
+
+  psiphos.documento_testuale:
+    class: Drupal\psiphos\Service\DocumentoTestuale
+    arguments:
+      - '@extension.list.module'
+      - '@psiphos.conservazione_documento'
+
+  psiphos.moduli_precompilati:
+    class: Drupal\psiphos\Service\ModuliPrecompilati
+    arguments:
+      - '@psiphos.intestazione_istituto'
+      - '@config.factory'
+      - '@psiphos.conservazione_documento'
+      - '@psiphos.attestazione_conformita'
+      - '@renderer'
+      - '@request_stack'

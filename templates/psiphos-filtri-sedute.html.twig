@@ -1,0 +1,45 @@
+{#
+/**
+ * @file
+ * La barra dei filtri, condivisa dall'archivio personale e dall'elenco
+ * amministrativo: due pagine che cercano nelle stesse sedute con gli stessi
+ * criteri, e che divergerebbero al primo ritocco se il modulo fosse scritto
+ * due volte.
+ *
+ * Variabili: filtri, opzioni, filtrato, azione.
+ */
+#}
+{# Il modulo di filtro è in GET e a mano, senza l'impianto dei moduli di
+   Drupal: così l'indirizzo resta leggibile e condivisibile — «?anno=2023/24»
+   si manda a un collega, un identificativo di costruzione no. #}
+<form method="get" action="{{ azione }}" class="psiphos-filtri">
+  <div class="psiphos-filtri__campo psiphos-filtri__campo--largo">
+    <label for="psiphos-filtro-oggetto">{{ 'Oggetto'|t }}</label>
+    <input type="search" id="psiphos-filtro-oggetto" name="oggetto" value="{{ filtri.oggetto }}"
+      maxlength="128" placeholder="{{ 'parola contenuta nell\'oggetto'|t }}">
+  </div>
+
+  {% for chiave, dati in {
+    'organo': {'etichetta': 'Organo'|t, 'valori': opzioni.organi},
+    'anno': {'etichetta': 'Anno scolastico'|t, 'valori': opzioni.anni},
+    'stato': {'etichetta': 'Stato'|t, 'valori': opzioni.stati},
+    'ruolo': {'etichetta': 'Ruolo'|t, 'valori': opzioni.ruoli},
+  } %}
+    <div class="psiphos-filtri__campo">
+      <label for="psiphos-filtro-{{ chiave }}">{{ dati.etichetta }}</label>
+      <select id="psiphos-filtro-{{ chiave }}" name="{{ chiave }}">
+        <option value="">{{ '— tutti —'|t }}</option>
+        {% for valore, etichetta in dati.valori %}
+          <option value="{{ valore }}"{{ filtri[chiave] == valore ? ' selected' }}>{{ etichetta }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  {% endfor %}
+
+  <div class="psiphos-filtri__comandi">
+    <button type="submit" class="psiphos-sedute__azione">{{ 'Filtra'|t }}</button>
+    {% if filtrato %}
+      <a href="{{ azione }}" class="psiphos-sedute__azione">{{ 'Azzera'|t }}</a>
+    {% endif %}
+  </div>
+</form>

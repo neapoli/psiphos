@@ -1,0 +1,532 @@
+<?php
+
+/**
+ * @file
+ * Schema delle tabelle di voto di Psíphos.
+ *
+ * Le schede e le attestazioni non sono entità Drupal ma tabelle semplici, e
+ * la scelta è deliberata. Un'entità porta con sé uuid, marche temporali di
+ * creazione e modifica, metadati di revisione e una catena di hook che altri
+ * moduli possono intercettare e registrare altrove. Per il voto a scrutinio
+ * segreto tutto questo è superficie di attacco: il §4.3 dell'allegato tecnico
+ * chiede che nemmeno gli amministratori di sistema possano risalire al voto
+ * individuale, e il modo più solido per garantirlo è non scrivere il dato che
+ * consentirebbe di farlo.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Le tabelle e le entità del modulo se ne vanno da sé: Drupal rimuove quelle
+ * dichiarate qui e rifiuta la disinstallazione finché esiste contenuto, che è
+ * il presidio giusto per un modulo che custodisce atti.
+ *
+ * I documenti dei verbali sigillati restano invece dove sono, e non per
+ * dimenticanza: possono essere l'ultima copia di un atto amministrativo. Chi
+ * disinstalla deve poterli versare in conservazione o archiviare prima di
+ * eliminarli, e la scelta va lasciata a lui.
+ */
+function psiphos_uninstall(): void {
+  $cartelle = ['private://psiphos/verbali', 'private://psiphos/delibere'];
+  $sistemaFile = \Drupal::service('file_system');
+
+  $documenti = [];
+  foreach ($cartelle as $cartella) {
+    if (is_dir($sistemaFile->realpath($cartella) ?: '')) {
+      $documenti += $sistemaFile->scanDirectory($cartella, '/\.pdf$/');
+    }
+  }
+
+  if ($documenti === []) {
+    return;
+  }
+
+  $avviso = t('Psíphos è stato disinstallato, ma @numero documenti fra verbali ed estratti di delibera restano in @cartelle. Non sono stati rimossi perché possono essere l\'ultima copia di atti amministrativi: vanno versati in conservazione o archiviati prima di essere eliminati.', [
+    '@numero' => count($documenti),
+    '@cartelle' => implode(', ', $cartelle),
+  ]);
+
+  \Drupal::messenger()->addWarning($avviso);
+  \Drupal::logger('psiphos')->warning($avviso);
+}
+
+/**
+ * Implements hook_schema().
+ */
+function psiphos_schema(): array {
+  $schema = [];
+
+  $schema['psiphos_urna'] = [
+    'description' => 'Schede depositate a scrutinio segreto. Non contiene alcun riferimento al votante.',
+    'fields' => [
+      'id' => [
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => "Identificativo casuale su 62 bit. Non è progressivo: essendo chiave primaria, InnoDB ordina fisicamente le righe secondo questo valore, così l'ordine di memorizzazione non conserva l'ordine di deposito.",
+      ],
+      'delibera' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Votazione a cui la scheda appartiene.',
+      ],
+      'voci' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Chiavi tecniche delle voci votate, in ordine alfabetico e separate da virgola. Nessun testo in chiaro, nessun dato personale.',
+      ],
+    ],
+    // Nessuna marca temporale: una scheda con l'ora di deposito, accostata
+    // all'ora di attestazione del votante, ricostruirebbe la corrispondenza
+    // che il §4.3 impone di rendere impossibile.
+    'primary key' => ['id'],
+    'indexes' => [
+      'delibera' => ['delibera'],
+    ],
+  ];
+
+  $schema['psiphos_attestazione'] = [
+    'description' => "Registro di chi ha votato a scrutinio segreto. Attesta la partecipazione al voto, mai il suo contenuto.",
+    'fields' => [
+      'delibera' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'utente' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+    ],
+    // Nessuna marca temporale. Il §4.3 chiede che i metadati — log e
+    // timestamp — siano gestiti in modo da non consentire «neanche
+    // indirettamente» la re-identificazione del votante: l'istante in cui
+    // ciascuno ha votato è precisamente il metadato che, accostato all'ordine
+    // di deposito delle schede, ricostruirebbe la corrispondenza. Che quel
+    // dato fosse qui e non sulla scheda non lo rendeva innocuo, lo rendeva
+    // soltanto scomodo da usare. Il momento di ciascun deposito resta nelle
+    // tracciature, dove serve alla ricostruibilità del §2 ed è protetto dalla
+    // catena, e non viene duplicato qui dove non serviva a nulla.
+    //
+    // La chiave primaria composta è il presidio di unicità richiesto dal
+    // §4.1: il secondo voto della stessa persona viola un vincolo di
+    // integrità del database, non un controllo applicativo aggirabile.
+    'primary key' => ['delibera', 'utente'],
+    'indexes' => [
+      'utente' => ['utente'],
+    ],
+  ];
+
+  $schema['psiphos_voto_palese'] = [
+    'description' => 'Voti palesi. Il §4.2 impone qui il contrario del voto segreto: piena tracciabilità e associazione fra votante e scelta espressa.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'delibera' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'utente' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'voci' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'registrato_il' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'voto_unico' => ['delibera', 'utente'],
+    ],
+    'indexes' => [
+      'delibera' => ['delibera'],
+    ],
+  ];
+
+  $schema['psiphos_ammesso_al_voto'] = [
+    'description' => "Elettorato di ciascuna votazione, fissato all'apertura dell'urna.",
+    'fields' => [
+      'delibera' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'utente' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+    ],
+    // Il denominatore dei quorum è congelato all'apertura dell'urna: perché
+    // resti coerente, deve esserlo anche l'insieme di chi può votare. Senza
+    // questo elenco, chi entra in aula a votazione iniziata potrebbe
+    // depositare una scheda in più rispetto ai presenti su cui la
+    // maggioranza è calcolata, e l'esito verrebbe determinato su una base
+    // diversa da quella dichiarata.
+    'primary key' => ['delibera', 'utente'],
+  ];
+
+  $schema['psiphos_audit'] = [
+    'description' => 'Tracciature tecniche del procedimento deliberativo (allegato tecnico §2 e §5).',
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'seduta' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Seduta a cui la tracciatura appartiene. Zero per gli eventi non riferiti a una seduta.',
+      ],
+      'delibera' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'evento' => ['type' => 'varchar', 'length' => 64, 'not null' => TRUE],
+      'utente' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'momento' => ['type' => 'int', 'not null' => TRUE],
+      'contesto' => [
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'Circostanze dell\'evento in forma strutturata. Non contiene mai il contenuto di un voto.',
+      ],
+      'precedente' => [
+        'type' => 'char',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Impronta della tracciatura precedente della stessa seduta.',
+      ],
+      'impronta' => [
+        'type' => 'char',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'Impronta di questa tracciatura, calcolata anche sulla precedente.',
+      ],
+    ],
+    // La catena è per seduta e non globale: alla scadenza dei termini di
+    // conservazione le tracciature di una seduta si rimuovono per intero,
+    // senza spezzare la catena delle altre.
+    'primary key' => ['id'],
+    'indexes' => [
+      'seduta' => ['seduta', 'id'],
+      'momento' => ['momento'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Introduce il verbale di seduta e le impostazioni di conservazione (§7).
+ */
+function psiphos_update_10001(): string {
+  $gestore = \Drupal::entityDefinitionUpdateManager();
+
+  if (!$gestore->getEntityType('psiphos_verbale')) {
+    $gestore->installEntityType(\Drupal::entityTypeManager()->getDefinition('psiphos_verbale'));
+  }
+
+  $impostazioni = \Drupal::configFactory()->getEditable('psiphos.settings');
+  if ($impostazioni->get('conservazione') === NULL) {
+    $impostazioni
+      ->set('conservazione.pdfa_attivo', TRUE)
+      ->set('conservazione.ghostscript', '/usr/bin/gs')
+      ->save();
+  }
+
+  return (string) t('Verbale di seduta installato. Verificare in @percorso che il percorso di Ghostscript sia corretto: senza, i verbali saranno conservati in PDF ordinario anziché in PDF/A.', [
+    '@percorso' => '/admin/config/psiphos',
+  ]);
+}
+
+/**
+ * Introduce le tracciature tecniche del procedimento deliberativo (§2, §5).
+ */
+function psiphos_update_10002(): string {
+  $schema = \Drupal::database()->schema();
+
+  if (!$schema->tableExists('psiphos_audit')) {
+    $definizioni = psiphos_schema();
+    $schema->createTable('psiphos_audit', $definizioni['psiphos_audit']);
+  }
+
+  $impostazioni = \Drupal::configFactory()->getEditable('psiphos.settings');
+  if ($impostazioni->get('audit') === NULL) {
+    $impostazioni
+      ->set('audit.ritenzione_giorni', 3650)
+      ->save();
+  }
+
+  return (string) t('Tracciature tecniche attivate. La conservazione predefinita è di dieci anni, modificabile in /admin/config/psiphos.');
+}
+
+/**
+ * Fissa l'elettorato di ciascuna votazione all'apertura dell'urna (§4.1).
+ */
+function psiphos_update_10003(): string {
+  $schema = \Drupal::database()->schema();
+
+  if (!$schema->tableExists('psiphos_ammesso_al_voto')) {
+    $definizioni = psiphos_schema();
+    $schema->createTable('psiphos_ammesso_al_voto', $definizioni['psiphos_ammesso_al_voto']);
+  }
+
+  // Le votazioni già aperte non hanno un elettorato registrato: vi si
+  // ammettono i presenti risultanti al momento dell'aggiornamento, che è la
+  // ricostruzione più fedele possibile a posteriori.
+  $database = \Drupal::database();
+  $aperte = $database->select('psiphos_delibera', 'd')
+    ->fields('d', ['id', 'seduta'])
+    ->isNotNull('aperta_il')
+    ->execute()
+    ->fetchAllKeyed();
+
+  $ricostruite = 0;
+
+  foreach ($aperte as $delibera => $seduta) {
+    $esistenti = (int) $database->select('psiphos_ammesso_al_voto', 'a')
+      ->condition('delibera', $delibera)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    if ($esistenti > 0) {
+      continue;
+    }
+
+    $presenti = $database->select('psiphos_presenza', 'p')
+      ->fields('p', ['utente'])
+      ->condition('seduta', $seduta)
+      ->execute()
+      ->fetchCol();
+
+    foreach ($presenti as $utente) {
+      $database->merge('psiphos_ammesso_al_voto')
+        ->keys(['delibera' => $delibera, 'utente' => $utente])
+        ->execute();
+    }
+
+    $ricostruite++;
+  }
+
+  return (string) t('Elettorato registrato per le votazioni. Ricostruito a posteriori per @numero votazioni già aperte.', [
+    '@numero' => $ricostruite,
+  ]);
+}
+
+/**
+ * Introduce l'estratto di delibera come atto autonomo (§7).
+ */
+function psiphos_update_10004(): string {
+  $gestore = \Drupal::entityDefinitionUpdateManager();
+  $definizioni = \Drupal\psiphos\Entity\Delibera::baseFieldDefinitions(
+    \Drupal::entityTypeManager()->getDefinition('psiphos_delibera')
+  );
+
+  // Il confronto va fatto con le definizioni già installate e non con quelle
+  // dichiarate nel codice: queste ultime contengono sempre i campi nuovi —
+  // è il codice ad averli introdotti — e chiederle equivarrebbe a non
+  // controllare nulla, saltando l'installazione di tutti.
+  $installate = \Drupal::service('entity.last_installed_schema.repository')
+    ->getLastInstalledFieldStorageDefinitions('psiphos_delibera');
+
+  $nuovi = ['oggetto', 'premesse', 'dispositivo', 'documento', 'impronta_atto', 'impronta_documento', 'formato'];
+  $installati = 0;
+
+  foreach ($nuovi as $campo) {
+    if (isset($installate[$campo])) {
+      continue;
+    }
+    $gestore->installFieldStorageDefinition($campo, 'psiphos_delibera', 'psiphos', $definizioni[$campo]);
+    $installati++;
+  }
+
+  return (string) t('Estratto di delibera attivato: @numero campi installati. Le delibere già votate possono essere redatte come atti finché il verbale della loro seduta non è sigillato; quelle di sedute già verbalizzate restano documentate nel solo verbale.', [
+    '@numero' => $installati,
+  ]);
+}
+
+/**
+ * Conserva l'esportazione di verbali e atti anziché ricostruirla (§7).
+ */
+function psiphos_update_10005(): string {
+  $gestore = \Drupal::entityDefinitionUpdateManager();
+  $repository = \Drupal::service('entity.last_installed_schema.repository');
+
+  $tipi = [
+    'psiphos_verbale' => \Drupal\psiphos\Entity\Verbale::class,
+    'psiphos_delibera' => \Drupal\psiphos\Entity\Delibera::class,
+  ];
+
+  foreach ($tipi as $tipo => $classe) {
+    if (isset($repository->getLastInstalledFieldStorageDefinitions($tipo)['contenuto'])) {
+      continue;
+    }
+    $definizioni = $classe::baseFieldDefinitions(\Drupal::entityTypeManager()->getDefinition($tipo));
+    $gestore->installFieldStorageDefinition('contenuto', $tipo, 'psiphos', $definizioni['contenuto']);
+  }
+
+  // I documenti sigillati prima di questo aggiornamento non conservano la
+  // propria esportazione: la loro impronta era calcolata su una struttura
+  // ricostruita a ogni richiesta, e non è più ricalcolabile in modo garantito.
+  // Vanno segnalati esplicitamente, perché continuare a mostrarli come
+  // verificabili sarebbe un'attestazione che il modulo non può più sostenere.
+  $senzaContenuto = (int) \Drupal::database()->select('psiphos_verbale', 'v')
+    ->condition('stato', 'sigillato')
+    ->isNull('contenuto')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
+  if ($senzaContenuto === 0) {
+    return (string) t("Verbali e atti conservano ora la propria esportazione: l'impronta è calcolata su byte salvati una volta sola e non più su una struttura ricostruita a ogni richiesta.");
+  }
+
+  return (string) t("Verbali e atti conservano ora la propria esportazione. Attenzione: @numero verbali già sigillati non la conservano, perché sigillati da una versione precedente. La loro pagina di verifica lo dichiara e non ne attesta più l'integrità: se documentano sedute reali vanno riprodotti, altrimenti rimossi.", [
+    '@numero' => $senzaContenuto,
+  ]);
+}
+
+/**
+ * Le premesse dell'atto diventano un campo di testo unico.
+ */
+function psiphos_update_10006(): string {
+  $gestore = \Drupal::entityDefinitionUpdateManager();
+  $installate = \Drupal::service('entity.last_installed_schema.repository')
+    ->getLastInstalledFieldStorageDefinitions('psiphos_delibera');
+
+  if (isset($installate['premesse']) && $installate['premesse']->getType() === 'text_long') {
+    return (string) t('Le premesse sono già un campo di testo unico.');
+  }
+
+  $conservate = [];
+
+  if (isset($installate['premesse'])) {
+    // Le premesse esistenti si ricompongono in un testo solo, una riga per
+    // voce: cambiare il tipo di un campo ne svuota l'archivio, e perdere i
+    // «visto» di una delibera già redatta significa rifarla da capo.
+    $database = \Drupal::database();
+    if ($database->schema()->tableExists('psiphos_delibera__premesse')) {
+      $righe = $database->select('psiphos_delibera__premesse', 'p')
+        ->fields('p', ['entity_id', 'premesse_value'])
+        ->orderBy('entity_id')
+        ->orderBy('delta')
+        ->execute();
+      foreach ($righe as $riga) {
+        $conservate[(int) $riga->entity_id][] = (string) $riga->premesse_value;
+      }
+    }
+
+    $gestore->uninstallFieldStorageDefinition($installate['premesse']);
+  }
+
+  $definizioni = \Drupal\psiphos\Entity\Delibera::baseFieldDefinitions(
+    \Drupal::entityTypeManager()->getDefinition('psiphos_delibera')
+  );
+  $gestore->installFieldStorageDefinition('premesse', 'psiphos_delibera', 'psiphos', $definizioni['premesse']);
+
+  if ($conservate === []) {
+    return (string) t('Le premesse dell\'atto sono ora un campo di testo unico: si scrivono e si incollano in una volta sola anziché una riga per volta.');
+  }
+
+  $archivio = \Drupal::entityTypeManager()->getStorage('psiphos_delibera');
+  $riportate = 0;
+
+  foreach ($archivio->loadMultiple(array_keys($conservate)) as $delibera) {
+    // Una delibera già sigillata rifiuta ogni scrittura, e giustamente: il
+    // suo estratto conserva le premesse così come sono state sigillate.
+    if ($delibera->attoSigillato()) {
+      continue;
+    }
+    $delibera->set('premesse', [
+      'value' => implode("\n", $conservate[(int) $delibera->id()]),
+      'format' => 'plain_text',
+    ])->save();
+    $riportate++;
+  }
+
+  return (string) t('Le premesse dell\'atto sono ora un campo di testo unico. Riportate quelle di @numero delibere non ancora sigillate.', [
+    '@numero' => $riportate,
+  ]);
+}
+
+/**
+ * Rimuove la marca temporale dall'attestazione di voto segreto (§4.3).
+ */
+function psiphos_update_10007(): string {
+  $schema = \Drupal::database()->schema();
+
+  if (!$schema->fieldExists('psiphos_attestazione', 'registrata_il')) {
+    return (string) t("L'attestazione di voto segreto non conserva già alcuna marca temporale.");
+  }
+
+  $schema->dropField('psiphos_attestazione', 'registrata_il');
+
+  return (string) t("Rimossa la marca temporale dall'attestazione di voto segreto: era l'istante in cui ciascuno aveva votato, non serviva ad alcuna funzione e accostata all'ordine di deposito delle schede avrebbe consentito di ricostruire la corrispondenza fra votante e voto. Il momento di ciascun deposito resta nelle tracciature.");
+}
+
+/**
+ * Introduce i dati del fornitore dell'infrastruttura (§5).
+ */
+function psiphos_update_10008(): string {
+  $impostazioni = \Drupal::configFactory()->getEditable('psiphos.settings');
+
+  if (is_array($impostazioni->get('hosting'))) {
+    return (string) t("Il fornitore dell'infrastruttura è già previsto dalle impostazioni.");
+  }
+
+  $impostazioni->set('hosting', [
+    'denominazione' => '',
+    'partita_iva' => '',
+    'sede' => '',
+    'contatto' => '',
+    'ubicazione_dati' => '',
+    'nomina_protocollo' => '',
+    'nomina_data' => '',
+    'riscontro_protocollo' => '',
+    'riscontro_data' => '',
+  ])->save();
+
+  return (string) t("Aggiunta la sezione «Fornitore dell'infrastruttura» in /admin/config/psiphos. Chi ospita il sito tratta i dati per conto dell'istituzione e ne detiene i supporti: finché non è indicato, l'atto di nomina ex art. 28 resta in bianco, il registro delle attività di trattamento non ha i destinatari e il rischio residuo sul voto segreto non è attribuibile ad alcun soggetto determinato. I campi su ubicazione dei dati e protocolli registrano ciò che il fornitore ha dichiarato, non ciò che il sistema ha verificato, e nell'attestazione i requisiti del §5 restano a carico dell'istituzione.");
+}
+
+/**
+ * Restringe la consultazione dei verbali all'organo che li ha prodotti.
+ */
+function psiphos_update_10009(): string {
+  // Dirigente e segreteria continuano a vedere tutto: senza questa
+  // assegnazione perderebbero l'accesso agli atti che devono curare, e la
+  // scuola se ne accorgerebbe alla prima richiesta di accesso.
+  $ampio = 'psiphos visualizzare ogni verbale';
+  $assegnati = [];
+
+  foreach (\Drupal\user\Entity\Role::loadMultiple() as $ruolo) {
+    if ($ruolo->isAdmin() || $ruolo->hasPermission('administer psiphos')) {
+      continue;
+    }
+    if (!in_array($ruolo->id(), ['dirigente_scolastico', 'redattore', 'capo_redattore'], TRUE)) {
+      continue;
+    }
+    $ruolo->grantPermission($ampio)->save();
+    $assegnati[] = $ruolo->id();
+  }
+
+  $ristretti = [];
+  foreach (\Drupal\user\Entity\Role::loadMultiple() as $ruolo) {
+    if ($ruolo->hasPermission('psiphos visualizzare verbali') && !$ruolo->hasPermission($ampio)) {
+      $ristretti[] = $ruolo->id();
+    }
+  }
+
+  return (string) t("Il permesso «Consultare i verbali sigillati» vale ora per le sole sedute in cui si figura fra gli aventi diritto. Un docente non apre più il verbale del Consiglio di una classe che non è la sua, né quello del gruppo di lavoro operativo di un alunno di cui non fa parte: sono verbali che riferiscono della disabilità di minori identificati. Permesso ampio assegnato a: @ampi. Ora ristretti all'organo di appartenenza: @ristretti. Verificare in /admin/people/permissions che l'elenco corrisponda all'organizzazione dell'istituto.", [
+    '@ampi' => $assegnati === [] ? (string) t('nessun ruolo') : implode(', ', $assegnati),
+    '@ristretti' => $ristretti === [] ? (string) t('nessun ruolo') : implode(', ', $ristretti),
+  ]);
+}

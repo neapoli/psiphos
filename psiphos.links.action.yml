@@ -1,0 +1,5 @@
+psiphos.seduta.aggiungi:
+  route_name: entity.psiphos_seduta.add_form
+  title: 'Convoca una seduta'
+  appears_on:
+    - entity.psiphos_seduta.collection

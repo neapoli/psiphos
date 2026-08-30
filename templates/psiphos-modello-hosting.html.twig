@@ -1,0 +1,68 @@
+{#
+/**
+ * @file
+ * Richiesta al fornitore dell'infrastruttura, precompilata.
+ *
+ * Restano in bianco soltanto i dati che il sito non può conoscere: il luogo,
+ * la data e la firma. Il destinatario si compila quando il fornitore
+ * dell'infrastruttura è indicato nelle impostazioni del modulo.
+ */
+#}
+{% include '@psiphos/psiphos-carta-istituto.html.twig' with {istituto: istituto} only %}
+
+<div class="destinatario">
+  <p>{{ 'Spett.le'|t }}</p>
+  {% if hosting.denominazione %}
+    <p><strong>{{ hosting.denominazione }}</strong></p>
+    {% if hosting.sede %}<p>{{ hosting.sede }}</p>{% endif %}
+    {% if hosting.partita_iva %}<p>{{ 'P. IVA / C.F.'|t }} {{ hosting.partita_iva }}</p>{% endif %}
+    {% if hosting.contatto %}<p>{{ hosting.contatto }}</p>{% endif %}
+  {% else %}
+    <p class="vuoto">_______________________________________</p>
+    <p class="nota">{{ "(fornitore del servizio di hosting: indicarlo in /admin/config/psiphos perché la richiesta risulti compilata)"|t }}</p>
+  {% endif %}
+</div>
+
+<p class="oggetto">
+  {{ "Oggetto: trattamento di dati personali per conto del titolare — richiesta di documentazione ai sensi degli artt. 28 e 32 del Regolamento (UE) 2016/679"|t }}
+</p>
+
+<p>
+  {{ "Questa istituzione scolastica, titolare del trattamento, ospita presso di Voi il proprio sito istituzionale @dominio, sul quale è in corso di adozione un sistema per lo svolgimento a distanza delle sedute degli organi collegiali con voto deliberativo, in attuazione della nota MIM prot. 3803 del 30/06/2026 e del relativo allegato tecnico."|t({'@dominio': dominio}) }}
+</p>
+
+<p>
+  {{ "Poiché il servizio comporta il trattamento di dati personali per conto di questa istituzione, e poiché il §5 dell'allegato citato impone di verificare la localizzazione dei dati, le misure di sicurezza dichiarate dal fornitore e la conformità alle normative europee, si richiede quanto segue."|t }}
+</p>
+
+<ol>
+  <li>{{ "Atto di nomina a responsabile del trattamento ai sensi dell'art. 28 del Regolamento, ovvero il Vostro modello di accordo sul trattamento dei dati, per la sottoscrizione."|t }}</li>
+  <li>{{ "Indicazione del Paese in cui risiedono fisicamente il server, la banca dati e le copie di sicurezza, ed eventuali trasferimenti verso Paesi terzi con la relativa base giuridica."|t }}</li>
+  <li>{{ "Elenco dei sub-responsabili di cui Vi avvalete per l'erogazione del servizio, ovvero dichiarazione che non ne sono impiegati."|t }}</li>
+  <li>{{ "Dichiarazione sulle misure di cifratura dei dati a riposo applicate a banca dati, filesystem e copie di sicurezza."|t }}</li>
+  <li>{{ "Descrizione delle copie di sicurezza: frequenza, periodo di conservazione, ubicazione, cifratura, procedura e tempi di ripristino. Si chiede espressamente conferma che le copie comprendano sia la banca dati sia i file del sito."|t }}</li>
+  <li>{{ "Indicazione se siano attivi i registri delle transazioni del motore di banca dati (binary log o equivalenti), per quanto tempo siano conservati, chi vi abbia accesso e se sia possibile ridurne la conservazione per il nostro dominio."|t }}</li>
+  <li>{{ "Procedura e termine, espresso in ore, entro cui ci notificate un incidente di sicurezza che riguardi i nostri dati, e il recapito a cui la notifica perviene."|t }}</li>
+  <li>{{ "Conferma della disponibilità di Ghostscript e della non disabilitazione della funzione PHP «proc_open» per il nostro dominio, necessarie alla produzione dei documenti nel formato PDF/A prescritto dalle Linee guida AgID."|t }}</li>
+</ol>
+
+<p>
+  {{ "La documentazione richiesta sarà acquisita agli atti quale adempimento del §5 dell'allegato tecnico e richiamata nella valutazione d'impatto sulla protezione dei dati."|t }}
+</p>
+
+<p>
+  {{ "Si chiede cortesemente un riscontro puntuale su ciascun punto, comprensivo delle risposte negative: la dichiarazione che una misura non è adottata è, ai fini che qui interessano, un'informazione necessaria quanto quella che attesta il contrario, e la sua assenza non consente di distinguere ciò che non è previsto da ciò a cui non si è risposto."|t }}
+</p>
+
+<p>
+  {{ "Si chiede cortesemente di voler far pervenire il riscontro entro il"|t }}
+  <span class="vuoto">_______________</span>,
+  {{ "dovendo questa istituzione completare gli adempimenti preliminari alla prima seduta deliberativa. Ove il termine non fosse compatibile con i Vostri tempi, sarà sufficiente indicarne uno diverso."|t }}
+</p>
+
+<p>{{ 'Distinti saluti.'|t }}</p>
+
+<div class="firma">
+  <p>{{ 'Luogo e data'|t }} <span class="vuoto">_______________________________</span></p>
+  <p>{{ 'Il Dirigente scolastico'|t }} <span class="vuoto">_______________________________</span></p>
+</div>

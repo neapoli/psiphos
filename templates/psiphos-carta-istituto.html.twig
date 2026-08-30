@@ -1,0 +1,36 @@
+{#
+/**
+ * @file
+ * Carta intestata dell'istituto per i modelli precompilati.
+ *
+ * Variabili:
+ * - istituto: dati della sede legale.
+ */
+#}
+<div class="carta">
+  <p class="ente">{{ istituto.istituto }}</p>
+  {% if istituto.indirizzo or istituto.comune %}
+    <p>
+      {{- istituto.indirizzo }}
+      {%- if istituto.indirizzo and istituto.comune %} – {% endif %}
+      {%- if istituto.cap %}{{ istituto.cap }} {% endif %}
+      {{- istituto.comune }}
+      {%- if istituto.provincia %} ({{ istituto.provincia }}){% endif -%}
+    </p>
+  {% endif %}
+  {% if istituto.telefono or istituto.codice_fiscale %}
+    <p>
+      {%- if istituto.telefono %}{{ 'Tel.'|t }} {{ istituto.telefono }}{% endif -%}
+      {%- if istituto.telefono and istituto.codice_fiscale %} – {% endif -%}
+      {%- if istituto.codice_fiscale %}{{ 'C.F.:'|t }} {{ istituto.codice_fiscale }}{% endif -%}
+      {%- if istituto.codice_meccanografico %} – {{ 'Cod. mecc.:'|t }} {{ istituto.codice_meccanografico }}{% endif -%}
+    </p>
+  {% endif %}
+  {% if istituto.email or istituto.pec %}
+    <p>
+      {{- istituto.email }}
+      {%- if istituto.email and istituto.pec %} – {% endif %}
+      {{- istituto.pec -}}
+    </p>
+  {% endif %}
+</div>

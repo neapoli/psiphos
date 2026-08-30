@@ -1,0 +1,173 @@
+{#
+/**
+ * @file
+ * Attestazione di conformità ai requisiti dell'allegato tecnico.
+ *
+ * La colonna «a carico di» è la parte che conta per chi legge: dice quali
+ * requisiti il modulo soddisfa e quali restano da attuare dall'istituzione.
+ * Una dichiarazione che le tacesse sarebbe rassicurante e falsa.
+ *
+ * Variabili:
+ * - attestazione: struttura dell'attestazione.
+ * - azioni: collegamenti operativi disponibili.
+ * - documento: TRUE quando la resa è destinata al documento da sottoscrivere.
+ */
+#}
+<div class="psiphos-conformita">
+
+  {% if documento %}
+    <h1>{{ 'Dichiarazione di conformità'|t }}</h1>
+    <p>
+      {{ "Requisiti tecnico-organizzativi per la gestione digitale degli organi collegiali e delle operazioni di voto nelle istituzioni scolastiche — allegato tecnico alla nota MIM prot. 3803 del 30 giugno 2026, §9."|t }}
+    </p>
+  {% endif %}
+
+  <dl>
+    <dt>{{ 'Prodotto'|t }}</dt>
+    <dd>{{ attestazione.prodotto.denominazione }} {{ attestazione.prodotto.versione }}</dd>
+
+    <dt>{{ 'Istituzione'|t }}</dt>
+    <dd>{{ attestazione.istituzione }}</dd>
+
+    <dt>{{ 'Natura della soluzione'|t }}</dt>
+    <dd>{{ attestazione.prodotto.natura }}</dd>
+
+    <dt>{{ 'Riferimento'|t }}</dt>
+    <dd class="psiphos-verbale__nota">{{ attestazione.riferimento }}</dd>
+  </dl>
+
+  <p>
+    {#
+      «Da verificare» diceva il contrario di quel che questo stato significa:
+      il modulo ha guardato e ha trovato qualcosa — una catena compromessa, un
+      aggiornamento di sicurezza non applicato, una misura disattivata. Non è
+      un controllo che manca, è un rilievo che c'è.
+    #}
+    {{ 'Requisiti attuati dal modulo: @attuati. Con rilievi: @attenzione. A carico dell\'istituzione: @carico.'|t({
+      '@attuati': attestazione.riepilogo.attuato,
+      '@attenzione': attestazione.riepilogo.attenzione,
+      '@carico': attestazione.riepilogo.a_carico,
+    }) }}
+  </p>
+
+  {% if azioni %}
+    <ul class="psiphos-azioni">
+      {% for azione in azioni %}<li>{{ azione }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <table class="psiphos-conformita__requisiti">
+    {# Senza larghezze dichiarate il browser le calcola sul contenuto, e
+       l'attuazione — che è prosa lunga — schiaccia le due colonne di sintesi,
+       che sono quelle che si leggono per prime. #}
+    <colgroup>
+      <col class="psiphos-conformita__col--paragrafo">
+      <col class="psiphos-conformita__col--requisito">
+      <col class="psiphos-conformita__col--attuazione">
+      <col class="psiphos-conformita__col--carico">
+      <col class="psiphos-conformita__col--stato">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>{{ '§'|t }}</th>
+        <th>{{ 'Requisito'|t }}</th>
+        <th>{{ 'Attuazione'|t }}</th>
+        <th>{{ 'A carico di'|t }}</th>
+        <th>{{ 'Stato'|t }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for requisito in attestazione.requisiti %}
+        <tr class="psiphos-conformita__riga--{{ requisito.stato }}">
+          <td>{{ requisito.paragrafo }}</td>
+          <td>
+            <strong>{{ requisito.titolo }}</strong>
+            <p class="psiphos-verbale__nota">{{ requisito.richiesta }}</p>
+          </td>
+          <td>
+            {{ requisito.attuazione }}
+            {% if requisito.nota %}
+              <p class="psiphos-verbale__nota">{{ requisito.nota }}</p>
+            {% endif %}
+          </td>
+          <td>
+            {{ {
+              'modulo': 'Psíphos'|t,
+              'istituzione': 'Istituzione scolastica'|t,
+              'condivisa': 'Entrambi'|t,
+            }[requisito.responsabilita] }}
+          </td>
+          <td>
+            {{ {
+              'attuato': 'Attuato'|t,
+              'attenzione': 'Richiede attenzione'|t,
+              'a_carico': 'Da attuare'|t,
+            }[requisito.stato] }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="psiphos-verbale__nota">
+    {{ "Attestazione prodotta dalla configurazione in essere il"|t }} {{ attestazione.prodotta_il|psiphos_istante }}.
+    {{ "Va riprodotta dopo ogni modifica della configurazione."|t }}
+  </p>
+
+  {% if documento %}
+    <h2>{{ 'Dichiarazione'|t }}</h2>
+
+    {% if attestazione.fornitore.denominazione %}
+      <dl>
+        <dt>{{ 'Fornitore dichiarante'|t }}</dt>
+        <dd>
+          {{- attestazione.fornitore.denominazione }}
+          {%- if attestazione.fornitore.partita_iva %} — {{ 'P. IVA / C.F.'|t }} {{ attestazione.fornitore.partita_iva }}{% endif %}
+          {%- if attestazione.fornitore.contatto %} — {{ attestazione.fornitore.contatto }}{% endif -%}
+        </dd>
+      </dl>
+    {% else %}
+      <p class="psiphos-verbale__nota">
+        {{ "Il fornitore non è indicato nelle impostazioni del modulo: una dichiarazione resa da soggetto non identificato non assolve l'obbligo del §9."|t }}
+      </p>
+    {% endif %}
+
+    <p>
+      {{ "Il sottoscritto, in qualità di soggetto che ha realizzato e messo a disposizione il modulo sopra indicato, dichiara che esso, nella versione installata e nella configurazione qui attestata, presenta le caratteristiche tecniche descritte e attua i requisiti dell'allegato tecnico per le parti indicate come a proprio carico."|t }}
+    </p>
+
+    <p>
+      {{ "Dà atto che i requisiti indicati come a carico dell'istituzione scolastica non sono attuati dal modulo e restano di competenza del titolare del trattamento."|t }}
+    </p>
+
+    {#
+      Il rischio residuo va dichiarato come è, non come si vorrebbe che fosse:
+      non è una correlazione statistica esercitabile solo a urna aperta, ma la
+      lettura dell'ordine di scrittura delle schede nei registri del motore di
+      banca dati — che su hosting condiviso sono del fornitore dell'hosting.
+      Sottoscrivere una descrizione più mite di quella nota è precisamente ciò
+      che una dichiarazione di conformità non deve fare.
+    #}
+    <p>
+      {{ "Dà altresì atto che il voto a scrutinio segreto conserva un margine residuo: chi disponga dei registri del motore di banca dati, e non del solo accesso alle tabelle, può leggervi l'ordine di scrittura delle schede e accostarlo alle tracciature, risalendo alla corrispondenza fra votante e voto. Il margine non è eliminabile da un'applicazione, perché nasce sotto di essa; su infrastruttura condivisa quei registri sono nella disponibilità del fornitore dell'hosting, e il contenimento è affidato a misure organizzative e all'atto di nomina di quest'ultimo."|t }}
+    </p>
+
+    <div class="psiphos-conformita__firma">
+      <p>{{ 'Luogo e data'|t }} ______________________________________</p>
+      <p>{{ 'Nome, cognome e qualifica'|t }} ______________________________________</p>
+      <p>{{ 'Firma'|t }} ______________________________________</p>
+    </div>
+
+    <h2>{{ 'Presa d\'atto dell\'istituzione scolastica'|t }}</h2>
+
+    <p>
+      {{ "Il dirigente scolastico, acquisita la presente dichiarazione ai sensi del §9 dell'allegato tecnico, dà atto dei requisiti che restano a carico dell'istituzione e dispone quanto necessario alla loro attuazione."|t }}
+    </p>
+
+    <div class="psiphos-conformita__firma">
+      <p>{{ 'Luogo e data'|t }} ______________________________________</p>
+      <p>{{ 'Il dirigente scolastico'|t }} ______________________________________</p>
+    </div>
+  {% endif %}
+
+</div>

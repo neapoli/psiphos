@@ -1,0 +1,50 @@
+{#
+/**
+ * @file
+ * Carta intestata dell'istituto, comune a verbali ed estratti di delibera.
+ *
+ * Un solo template incluso da entrambi: verbale ed estratto escono dalla
+ * stessa segreteria e devono presentarsi allo stesso modo. Duplicare il
+ * blocco significherebbe correggere un recapito in un documento e non
+ * nell'altro.
+ *
+ * L'intestazione è congelata nel documento al momento del sigillo: un atto
+ * protocollato porta i recapiti che l'istituto aveva quel giorno.
+ *
+ * Variabili:
+ * - carta: dati dell'istituto (istituto, indirizzo, comune, provincia,
+ *   telefono, codice_fiscale, email, pec, sito).
+ */
+#}
+{% if carta.istituto %}
+  <div class="psiphos-carta">
+    <p class="psiphos-carta__istituto">{{ carta.istituto }}</p>
+
+    {% if carta.indirizzo or carta.comune %}
+      <p>
+        {{- carta.indirizzo }}
+        {%- if carta.indirizzo and carta.comune %} – {% endif %}
+        {{- carta.comune }}
+        {%- if carta.provincia %} ({{ carta.provincia }}){% endif -%}
+      </p>
+    {% endif %}
+
+    {% if carta.telefono or carta.codice_fiscale %}
+      <p>
+        {%- if carta.telefono %}{{ 'Tel.'|t }} {{ carta.telefono }}{% endif -%}
+        {%- if carta.telefono and carta.codice_fiscale %} – {% endif -%}
+        {%- if carta.codice_fiscale %}{{ 'C.F.:'|t }} {{ carta.codice_fiscale }}{% endif -%}
+      </p>
+    {% endif %}
+
+    {% if carta.email %}<p>{{ carta.email }}</p>{% endif %}
+
+    {% if carta.pec or carta.sito %}
+      <p>
+        {{- carta.pec }}
+        {%- if carta.pec and carta.sito %} – {% endif %}
+        {{- carta.sito -}}
+      </p>
+    {% endif %}
+  </div>
+{% endif %}

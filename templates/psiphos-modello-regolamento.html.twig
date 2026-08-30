@@ -1,0 +1,90 @@
+{#
+/**
+ * @file
+ * Articolo per il Regolamento d'istituto, con i valori in essere.
+ *
+ * I valori che devono corrispondere alla configurazione — tolleranza di
+ * collegamento, conservazione delle tracciature, livello di autenticazione,
+ * sessione esclusiva — sono letti dalle impostazioni anziché lasciati da
+ * trascrivere: è il punto in cui il Regolamento comincia a promettere ciò che
+ * il sistema non fa.
+ */
+#}
+{% include '@psiphos/psiphos-carta-istituto.html.twig' with {istituto: istituto} only %}
+
+<h1>{{ "Regolamento d'istituto"|t }}<br>
+  {{ 'Art. ___ — Svolgimento a distanza delle attività collegiali deliberative'|t }}</h1>
+
+<p class="nota">
+  {{ "Testo predisposto sulla configurazione in essere del sistema alla data odierna. Va sottoposto al Consiglio d'istituto per l'adozione, previo parere del Collegio dei docenti. Il numero dell'articolo va attribuito secondo la numerazione del Regolamento vigente."|t }}
+</p>
+
+<p><strong>{{ '1. Ambito.'|t }}</strong>
+  {{ "Le attività collegiali di cui all'art. 44, comma 3, lettere a) e b), del CCNL comparto Istruzione e Ricerca del 18 gennaio 2024 che rivestono carattere deliberativo possono svolgersi, in tutto o in parte, a distanza. Rientrano nell'ambito le riunioni del Collegio dei docenti, comprese le attività di programmazione, la verifica di inizio e fine anno e l'informazione alle famiglie, nonché i consigli di classe, di interclasse e di intersezione, inclusi i gruppi di lavoro operativo per l'inclusione. Restano esclusi gli organi e le attività non ricompresi nelle citate lettere a) e b)."|t }}</p>
+
+<p><strong>{{ '2. Convocazione.'|t }}</strong>
+  {{ "La convocazione indica l'organo, la data e l'ora di inizio, l'ordine del giorno con distinzione fra punti deliberativi e non deliberativi, la modalità di svolgimento e lo strumento di collegamento audio-video. È diramata con il consueto preavviso e con le consuete modalità."|t }}</p>
+
+<p><strong>{{ '3. Elenco degli aventi diritto.'|t }}</strong>
+  {{ "L'elenco degli aventi diritto è determinato all'atto della convocazione. Esso costituisce la base di calcolo dei quorum ed è cristallizzato all'apertura della seduta; le variazioni successive non incidono sulle soglie di validità delle deliberazioni assunte nella medesima seduta."|t }}</p>
+
+<p><strong>{{ '4. Identificazione e accesso.'|t }}</strong>
+  {{ "La partecipazione avviene tramite credenziali personali, non cedibili e non condivisibili, associate in modo univoco a ciascun avente diritto. Non sono ammessi accessi anonimi, generici o condivisi."|t }}
+  {% if configurazione.livello == 'forte' %}
+    {{ "L'accesso avviene mediante autenticazione forte, con identità digitale rilasciata ai sensi del Codice dell'amministrazione digitale."|t }}
+  {% elseif configurazione.livello == 'mfa' %}
+    {{ "L'accesso avviene mediante le credenziali personali del sito istituzionale, con autenticazione a due fattori."|t }}
+  {% else %}
+    {{ "L'accesso avviene mediante le credenziali personali del sito istituzionale."|t }}
+  {% endif %}
+  {% if configurazione.sessione_esclusiva %}
+    {{ "Ciascun avente diritto può essere accreditato da un solo dispositivo per volta: l'accesso da un nuovo dispositivo revoca l'accreditamento del precedente."|t }}
+  {% endif %}
+</p>
+
+<p><strong>{{ '5. Figure responsabili della conduzione e della verbalizzazione.'|t }}</strong>
+  {{ "La convocazione individua il Presidente della seduta e il Segretario verbalizzante, nel rispetto dell'ordinamento scolastico e delle competenze proprie di ciascun organo. Il Collegio dei docenti è presieduto dal Dirigente scolastico o, in caso di sua assenza o impedimento, dal collaboratore a ciò delegato; i consigli di classe, interclasse e intersezione sono presieduti secondo la disciplina loro propria. Le funzioni di conduzione della seduta e di verbalizzazione sono esercitabili esclusivamente da chi vi è designato nella convocazione, e la designazione non è modificabile a seduta aperta."|t }}</p>
+
+<p><strong>{{ '6. Costituzione della seduta e verifica del numero legale.'|t }}</strong>
+  {{ "Il Presidente dichiara aperta la seduta e procede all'accertamento delle presenze. La seduta è validamente costituita quando risultano presenti almeno la metà più uno degli aventi diritto. La verifica del numero legale precede la messa ai voti del primo punto deliberativo e può essere ripetuta su richiesta. Il numero dei presenti su cui si calcola la maggioranza è quello risultante all'apertura di ciascuna votazione e non muta fino alla sua chiusura: ingressi e uscite successivi non incidono sull'esito della votazione in corso. Il venir meno del numero legale nel corso della seduta è accertato dal Presidente prima di aprire la votazione successiva."|t }}</p>
+
+<p><strong>{{ '7. Permanenza in aula e decadenza della presenza.'|t }}</strong>
+  {{ "La presenza è accertata in modo continuativo. Il dispositivo dal quale l'avente diritto partecipa segnala automaticamente la propria presenza finché il collegamento all'aula resta attivo: non è richiesta alcuna interazione per mantenerla, e chi assiste senza intervenire resta presente a ogni effetto."|t }}
+  {{ "Trascorso un periodo superiore a @minuti minuti senza che alcun segnale pervenga — collegamento interrotto, dispositivo spento, pagina chiusa — la presenza decade e l'avente diritto, per riprendere parte ai lavori, deve rientrare. La presenza decaduta non concorre al numero legale. L'uscita dalla seduta, volontaria o per decadenza, è annotata negli atti."|t({'@minuti': configurazione.minuti}) }}</p>
+
+<p><strong>{{ '8. Modalità di votazione.'|t }}</strong>
+  {{ "Prima dell'apertura di ciascuna votazione il Presidente indica il quesito, la modalità di voto — palese o a scrutinio segreto — la struttura della scheda e la maggioranza richiesta. Tali elementi non sono modificabili una volta aperta la votazione. Nel voto palese la scelta espressa è registrata unitamente al nominativo del votante e riportata a verbale."|t }}</p>
+
+<p><strong>{{ '9. Voto a scrutinio segreto.'|t }}</strong>
+  {{ "Il voto a scrutinio segreto si svolge con strumenti che assicurano la separazione strutturale fra l'identità del votante e il voto espresso e l'anonimato effettivo e non reversibile del voto. Il verbale attesta la partecipazione al voto e il risultato complessivo dello scrutinio; non riporta, né può riportare, la scelta espressa da ciascuno."|t }}
+  {{ "L'istituzione adotta le misure organizzative necessarie a impedire che, per via di accessi tecnici all'infrastruttura che ospita il sistema, sia possibile risalire al voto individuale. A tal fine limita e documenta gli accessi amministrativi alla banca dati e ne richiama il divieto negli atti di nomina dei responsabili del trattamento."|t }}</p>
+
+<p><strong>{{ '10. Unicità del voto.'|t }}</strong>
+  {{ "Ciascun avente diritto esprime un solo voto per ciascuna votazione. Il voto depositato non è modificabile né revocabile."|t }}</p>
+
+<p><strong>{{ '11. Malfunzionamenti.'|t }}</strong>
+  {{ "In caso di malfunzionamento che pregiudichi la regolarità delle operazioni, il Presidente sospende la votazione, dandone motivazione. Le schede già depositate restano acquisite. Cessata la causa della sospensione, la votazione riprende; chi ha già votato non vota nuovamente. Ove il malfunzionamento non consenta di garantire la regolarità della votazione, questa è annullata con motivazione e ripetuta. L'esito della votazione annullata resta agli atti. La seduta non può essere dichiarata chiusa finché una votazione risulta aperta o sospesa."|t }}</p>
+
+<p><strong>{{ '12. Numerazione e forma delle deliberazioni.'|t }}</strong>
+  {{ "Ciascuna deliberazione è contraddistinta da un numero progressivo attribuito secondo il criterio adottato dall'istituto e riportato nel verbale accanto al punto all'ordine del giorno da cui è scaturita. La deliberazione è redatta anche in forma di atto autonomo, contenente il numero, la data, l'oggetto, la denominazione dell'organo, le premesse e il dispositivo, ed è formata secondo le regole tecniche sul documento informatico. L'estratto è sigillato contestualmente al verbale da cui è tratto e ne richiama gli estremi. I dati della votazione riportati nell'atto sono quelli risultanti dallo scrutinio e non sono trascritti manualmente."|t }}</p>
+
+<p><strong>{{ '13. Verbalizzazione.'|t }}</strong>
+  {{ "Il verbale è redatto dal Segretario verbalizzante designato nella convocazione e dà conto della costituzione della seduta, del registro delle presenze, dei punti trattati, delle votazioni e dei relativi esiti. Il verbale è sigillato al termine della redazione e da quel momento non è modificabile. L'eventuale correzione avviene mediante verbale di rettifica, che dà atto di entrambi."|t }}</p>
+
+<p><strong>{{ '14. Conservazione e tracciature.'|t }}</strong>
+  {{ "Il verbale e gli estratti di deliberazione sono formati nel formato prescritto dalle Linee guida AgID e associati ai metadati necessari a garantirne autenticità, integrità e contestualizzazione. La conservazione a norma dei documenti così formati è assicurata secondo il processo di conservazione dell'istituto, con il versamento al sistema di conservazione nei termini e con le modalità ivi stabiliti. La permanenza dei documenti nel sistema che li ha prodotti non costituisce conservazione."|t }}
+  {% if configurazione.ritenzione %}
+    {{ "Le tracciature tecniche del procedimento deliberativo sono conservate per @anni anni dalla chiusura della seduta e sono consultabili dai soggetti a ciò autorizzati ai soli fini della verifica della regolarità del procedimento."|t({'@anni': configurazione.ritenzione}) }}
+  {% elseif configurazione.ritenzione_giorni %}
+    {{ "Le tracciature tecniche del procedimento deliberativo sono conservate per @giorni giorni dalla chiusura della seduta e sono consultabili dai soggetti a ciò autorizzati ai soli fini della verifica della regolarità del procedimento."|t({'@giorni': configurazione.ritenzione_giorni}) }}
+  {% else %}
+    {{ "Le tracciature tecniche del procedimento deliberativo sono conservate senza limite di tempo e sono consultabili dai soggetti a ciò autorizzati ai soli fini della verifica della regolarità del procedimento."|t }}
+  {% endif %}
+</p>
+
+<p><strong>{{ '15. Protezione dei dati personali.'|t }}</strong>
+  {{ "I trattamenti connessi allo svolgimento a distanza delle attività collegiali sono effettuati nel rispetto del Regolamento (UE) 2016/679 e del d.lgs. 196/2003. L'istituzione scolastica è titolare del trattamento. È vietata la registrazione audio o video delle sedute salvo diversa e motivata deliberazione dell'organo, adottata nel rispetto della disciplina in materia di protezione dei dati personali."|t }}</p>
+
+<div class="firma">
+  <p class="nota">{{ "Il presente testo riproduce la configurazione del sistema alla data di produzione. Ogni successiva modifica delle impostazioni comporta la verifica della perdurante corrispondenza."|t }}</p>
+</div>

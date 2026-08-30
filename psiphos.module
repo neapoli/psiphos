@@ -1,0 +1,579 @@
+<?php
+
+/**
+ * @file
+ * Psíphos — svolgimento a distanza delle sedute collegiali deliberative.
+ *
+ * Attua la nota MIM prot. 3803 del 30/06/2026 e il relativo allegato tecnico
+ * «Requisiti tecnico-organizzativi per la gestione digitale degli organi
+ * collegiali e delle operazioni di voto nelle istituzioni scolastiche», in
+ * applicazione dell'art. 44, commi 3 lett. a) e b) e 6, del CCNL comparto
+ * Istruzione e Ricerca del 18/01/2024 (triennio 2019-2021).
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\psiphos\Entity\Delibera;
+use Drupal\psiphos\Entity\Seduta;
+use Drupal\psiphos\Entity\Verbale;
+use Drupal\psiphos\Enum\EventoAudit;
+use Drupal\psiphos\Enum\StatoDelibera;
+use Drupal\psiphos\Enum\StatoPresenza;
+use Drupal\psiphos\Enum\StatoSeduta;
+use Drupal\psiphos\Enum\StatoVerbale;
+
+/**
+ * Implements hook_help().
+ */
+function psiphos_help(string $route_name, RouteMatchInterface $route_match): string {
+  return match ($route_name) {
+    'help.page.psiphos' => '<p>' . t('Psíphos gestisce le sedute collegiali deliberative svolte a distanza: convocazione, ordine del giorno, presenze, votazioni palesi e a scrutinio segreto, verbalizzazione.') . '</p>'
+      . '<p>' . t('Il modulo non sostituisce la piattaforma di videoconferenza: l\'allegato tecnico consente espressamente l\'integrazione di più strumenti, purché ciascuno sia conforme ai requisiti per la propria funzione. Psíphos copre le operazioni di voto e la documentazione della seduta.') . '</p>'
+      . '<p>' . t('Prima dell\'uso in sedute deliberative il Regolamento d\'istituto deve essere integrato ai sensi del §8 dell\'allegato tecnico.') . '</p>',
+    'psiphos.settings' => '<p>' . t('Impostazioni di identificazione, autenticazione e sessione previste dal §3 dell\'allegato tecnico.') . '</p>',
+    default => '',
+  };
+}
+
+/**
+ * Implements hook_theme().
+ */
+function psiphos_theme(): array {
+  return [
+    'psiphos_stato_seduta' => [
+      'variables' => [
+        'seduta' => NULL,
+        'presenti' => 0,
+        'aventi_diritto' => 0,
+        'costituita' => FALSE,
+        'presenza' => NULL,
+      ],
+    ],
+    'psiphos_seduta' => [
+      'variables' => [
+        'seduta' => NULL,
+        'dati' => [],
+        'odg' => [],
+        'azioni' => [],
+      ],
+    ],
+    'psiphos_verbale' => [
+      'variables' => [
+        'verbale' => NULL,
+        'dati' => [],
+        'documento' => FALSE,
+        'sigillato' => FALSE,
+        'sigillante' => '',
+        'estratti' => [],
+        'azioni' => [],
+      ],
+    ],
+    'psiphos_estratto_delibera' => [
+      'variables' => [
+        'delibera' => NULL,
+        'dati' => [],
+        'documento' => FALSE,
+        'sigillato' => FALSE,
+        'azioni' => [],
+      ],
+    ],
+    'psiphos_tracciature' => [
+      'variables' => [
+        'seduta' => NULL,
+        'tracciature' => [],
+        'catena' => [],
+        'azioni' => [],
+      ],
+    ],
+    'psiphos_modello_hosting' => [
+      'variables' => ['istituto' => [], 'fornitore' => [], 'hosting' => [], 'dominio' => '', 'configurazione' => []],
+    ],
+    'psiphos_modello_nomina' => [
+      'variables' => ['istituto' => [], 'fornitore' => [], 'hosting' => [], 'dominio' => '', 'configurazione' => []],
+    ],
+    'psiphos_modello_nomina_hosting' => [
+      'variables' => ['istituto' => [], 'fornitore' => [], 'hosting' => [], 'dominio' => '', 'configurazione' => []],
+    ],
+    'psiphos_ritorno_dashboard' => [
+      'variables' => ['indirizzo' => NULL],
+    ],
+    'psiphos_filtri_sedute' => [
+      'variables' => ['filtri' => [], 'opzioni' => [], 'filtrato' => FALSE, 'azione' => ''],
+    ],
+    'psiphos_archivio_sedute' => [
+      'variables' => [
+        'sedute' => [],
+        'totale' => 0,
+        'impaginatore' => NULL,
+        'filtri_resi' => NULL,
+        'filtrato' => FALSE,
+        'ritorno' => NULL,
+      ],
+    ],
+    'psiphos_blocco_sedute' => [
+      'variables' => ['sedute' => [], 'eccedenti' => 0, 'archivio' => NULL, 'creazione' => NULL],
+    ],
+    'psiphos_modello_registro' => [
+      'variables' => ['istituto' => [], 'fornitore' => [], 'hosting' => [], 'dominio' => '', 'configurazione' => []],
+    ],
+    'psiphos_modello_conservazione' => [
+      'variables' => ['istituto' => [], 'fornitore' => [], 'hosting' => [], 'dominio' => '', 'configurazione' => []],
+    ],
+    'psiphos_modello_dpia' => [
+      'variables' => ['istituto' => [], 'fornitore' => [], 'hosting' => [], 'dominio' => '', 'configurazione' => []],
+    ],
+    'psiphos_modello_regolamento' => [
+      'variables' => ['istituto' => [], 'fornitore' => [], 'hosting' => [], 'dominio' => '', 'configurazione' => []],
+    ],
+    'psiphos_documentazione' => [
+      'variables' => ['documenti' => []],
+    ],
+    'psiphos_documento' => [
+      'variables' => ['contenuto' => '', 'azioni' => []],
+    ],
+    'psiphos_conformita' => [
+      'variables' => ['attestazione' => [], 'azioni' => [], 'documento' => FALSE],
+    ],
+    'psiphos_verifica_verbale' => [
+      'variables' => [
+        'verbale' => NULL,
+        'sigillato' => FALSE,
+        'contenuto_integro' => FALSE,
+        'contenuto_corrispondente' => FALSE,
+        'impronta_contenuto_registrata' => '',
+        'impronta_contenuto_ricalcolata' => '',
+        'impronta_dati_attuali' => '',
+        'documento_integro' => FALSE,
+        'impronta_documento_registrata' => '',
+        'impronta_documento_ricalcolata' => '',
+        'azioni' => [],
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements template_preprocess_HOOK() for psiphos_seduta.
+ */
+function template_preprocess_psiphos_seduta(array &$variabili): void {
+  $seduta = $variabili['seduta'];
+  $variabili['stato_seduta'] = $seduta instanceof \Drupal\psiphos\Entity\SedutaInterface
+    ? $seduta->stato()->etichetta()
+    : '';
+}
+
+/**
+ * Implements template_preprocess_HOOK() for psiphos_verbale.
+ *
+ * Il sandbox Twig di Drupal consente sulle entità solo un insieme ristretto
+ * di metodi: quanto il template deve sapere sullo stato del verbale va
+ * calcolato qui e passato come variabile.
+ */
+function template_preprocess_psiphos_verbale(array &$variabili): void {
+  $verbale = $variabili['verbale'];
+  $variabili['sigillato'] = $verbale instanceof \Drupal\psiphos\Entity\Verbale && $verbale->sigillato();
+
+  $variabili['sigillante'] = $verbale instanceof \Drupal\psiphos\Entity\Verbale
+    ? \Drupal\psiphos\Nominativo::perUtente($verbale->get('sigillato_da')->entity)
+    : '';
+}
+
+/**
+ * Implements template_preprocess_HOOK() for psiphos_estratto_delibera.
+ *
+ * Come per il verbale, il sandbox Twig non consente di interrogare l'entità
+ * sul proprio stato: se l'atto sia sigillato va stabilito qui.
+ */
+function template_preprocess_psiphos_estratto_delibera(array &$variabili): void {
+  $delibera = $variabili['delibera'];
+  $variabili['sigillato'] = $delibera instanceof \Drupal\psiphos\Entity\DeliberaInterface
+    && $delibera->attoSigillato();
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Precompila il legame gerarchico quando si arriva da una seduta o da un
+ * punto: senza questo, chi aggiunge una delibera deve ricordarsi a quale
+ * punto appartiene e cercarlo in autocompletamento, con il rischio di
+ * agganciarla alla seduta sbagliata.
+ */
+function psiphos_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, string $form_id): void {
+  $precompilazioni = [
+    'psiphos_punto_odg_add_form' => ['seduta' => 'psiphos_seduta'],
+    'psiphos_delibera_add_form' => [
+      'punto_odg' => 'psiphos_punto_odg',
+      'ripetizione_di' => 'psiphos_delibera',
+    ],
+  ];
+
+  if (!isset($precompilazioni[$form_id])) {
+    return;
+  }
+
+  $parametri = \Drupal::request()->query;
+
+  foreach ($precompilazioni[$form_id] as $campo => $tipoEntita) {
+    $valore = $parametri->get($campo);
+
+    if ($valore === NULL || !isset($form[$campo]['widget'][0]['target_id'])) {
+      continue;
+    }
+
+    $form[$campo]['widget'][0]['target_id']['#default_value'] = \Drupal::entityTypeManager()
+      ->getStorage($tipoEntita)
+      ->load($valore);
+  }
+}
+
+/**
+ * Implements template_preprocess_HOOK() for psiphos_stato_seduta.
+ *
+ * Gli stati arrivano al template già tradotti in etichette leggibili: il
+ * template non deve conoscere i valori tecnici della macchina a stati.
+ */
+function template_preprocess_psiphos_stato_seduta(array &$variabili): void {
+  $seduta = $variabili['seduta'];
+  $aula = \Drupal::service('psiphos.aula');
+
+  $variabili['stato_seduta'] = $seduta instanceof \Drupal\psiphos\Entity\SedutaInterface
+    ? $seduta->stato()->etichetta()
+    : '';
+  $variabili['quorum_etichetta'] = $seduta instanceof \Drupal\psiphos\Entity\SedutaInterface
+    ? $aula->etichettaQuorum($seduta)
+    : '';
+  $variabili['quorum_in_difetto'] = $seduta instanceof \Drupal\psiphos\Entity\SedutaInterface
+    && $aula->quorumInDifetto($seduta);
+
+  $presenza = $variabili['presenza'];
+  $variabili['stato_presenza'] = $presenza instanceof StatoPresenza ? $presenza->etichetta() : NULL;
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for psiphos_seduta.
+ */
+function psiphos_psiphos_seduta_insert(EntityInterface $entity): void {
+  \Drupal::service('psiphos.registro_audit')->annota(
+    EventoAudit::SEDUTA_CONVOCATA,
+    (int) $entity->id(),
+    0,
+    ['oggetto' => (string) $entity->label(), 'organo' => $entity->organo()->value]
+  );
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for psiphos_seduta.
+ *
+ * L'annotazione è agganciata al salvataggio e non ai comandi del banco di
+ * presidenza: qualunque strada porti al cambio di stato, la tracciatura
+ * viene scritta. Un registro che dipendesse dal percorso seguito
+ * documenterebbe solo i percorsi previsti.
+ */
+function psiphos_psiphos_seduta_update(EntityInterface $entity): void {
+  assert($entity instanceof Seduta);
+  $precedente = $entity->original ?? NULL;
+
+  if ($precedente === NULL || $precedente->get('stato')->value === $entity->get('stato')->value) {
+    return;
+  }
+
+  $evento = match ($entity->stato()) {
+    StatoSeduta::APERTA => EventoAudit::SEDUTA_APERTA,
+    StatoSeduta::CHIUSA => EventoAudit::SEDUTA_CHIUSA,
+    StatoSeduta::VERBALIZZATA => EventoAudit::SEDUTA_VERBALIZZATA,
+    StatoSeduta::ANNULLATA => EventoAudit::SEDUTA_ANNULLATA,
+    default => NULL,
+  };
+
+  if ($evento === NULL) {
+    return;
+  }
+
+  // Chiusi i lavori, chi è ancora collegato non compirà alcun gesto di
+  // uscita: l'ora di conclusione della sua presenza è la chiusura stessa.
+  // L'operazione è agganciata al cambio di stato e non al pulsante, così
+  // vale qualunque strada porti alla chiusura.
+  if ($evento === EventoAudit::SEDUTA_CHIUSA) {
+    \Drupal::service('psiphos.aula')->chiudiPresenze($entity);
+  }
+
+  \Drupal::service('psiphos.registro_audit')->annota($evento, (int) $entity->id(), 0, [
+    'aventi_diritto' => $entity->aventiDirittoAllApertura() ?? $entity->numeroAventiDiritto(),
+    'presenti' => $entity->numeroPresenti(),
+    'validamente_costituita' => $entity->validamenteCostituita(),
+  ]);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for psiphos_delibera.
+ */
+function psiphos_psiphos_delibera_insert(EntityInterface $entity): void {
+  assert($entity instanceof Delibera);
+
+  \Drupal::service('psiphos.registro_audit')->annota(
+    EventoAudit::DELIBERA_PREDISPOSTA,
+    (int) ($entity->get('seduta')->target_id ?? 0),
+    (int) $entity->id(),
+    [
+      'quesito' => (string) $entity->label(),
+      'tipo_voto' => $entity->tipoVoto()->value,
+      'schema_scheda' => $entity->schemaScheda()->value,
+      'regola_maggioranza' => $entity->regolaMaggioranza()->value,
+    ]
+  );
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for psiphos_delibera.
+ */
+function psiphos_psiphos_delibera_update(EntityInterface $entity): void {
+  assert($entity instanceof Delibera);
+  $precedente = $entity->original ?? NULL;
+
+  if ($precedente === NULL || $precedente->get('stato')->value === $entity->get('stato')->value) {
+    return;
+  }
+
+  $evento = match ($entity->stato()) {
+    StatoDelibera::IN_VOTAZIONE => EventoAudit::DELIBERA_APERTA,
+    StatoDelibera::SOSPESA => EventoAudit::DELIBERA_SOSPESA,
+    StatoDelibera::CHIUSA => EventoAudit::DELIBERA_CHIUSA,
+    StatoDelibera::ANNULLATA => EventoAudit::DELIBERA_ANNULLATA,
+    default => NULL,
+  };
+
+  if ($evento === NULL) {
+    return;
+  }
+
+  // L'elettorato si fissa alla prima apertura dell'urna e non alle riprese
+  // dopo una sospensione: chi era ammesso resta ammesso, chi non lo era non
+  // lo diventa perché nel frattempo è arrivato.
+  if ($evento === EventoAudit::DELIBERA_APERTA) {
+    $urna = \Drupal::service('psiphos.urna');
+
+    if (!$urna->elettoratoFissato($entity)) {
+      $urna->fissaElettorato($entity);
+    }
+  }
+
+  $contesto = [
+    'stato_precedente' => (string) $precedente->get('stato')->value,
+    'presenti_al_voto' => (int) $entity->get('presenti_al_voto')->value,
+  ];
+
+  if ($evento === EventoAudit::DELIBERA_CHIUSA) {
+    // L'esito complessivo è pubblico e va tracciato; il conteggio per voce
+    // resta sulla delibera e nel verbale, dove è già consultabile.
+    $contesto['votanti'] = (int) $entity->get('votanti')->value;
+    $contesto['esito'] = $entity->esito()?->value ?? '';
+    $contesto['sigillo_urna'] = (string) $entity->get('sigillo_urna')->value;
+  }
+
+  if ($evento === EventoAudit::DELIBERA_SOSPESA || $evento === EventoAudit::DELIBERA_ANNULLATA) {
+    $contesto['motivazione'] = trim((string) $entity->get('motivazione')->value);
+  }
+
+  \Drupal::service('psiphos.registro_audit')->annota(
+    $evento,
+    (int) ($entity->get('seduta')->target_id ?? 0),
+    (int) $entity->id(),
+    $contesto
+  );
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for psiphos_verbale.
+ */
+function psiphos_psiphos_verbale_insert(EntityInterface $entity): void {
+  \Drupal::service('psiphos.registro_audit')->annota(
+    EventoAudit::VERBALE_BOZZA,
+    (int) ($entity->get('seduta')->target_id ?? 0)
+  );
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for psiphos_verbale.
+ */
+function psiphos_psiphos_verbale_update(EntityInterface $entity): void {
+  assert($entity instanceof Verbale);
+  $precedente = $entity->original ?? NULL;
+
+  if ($precedente === NULL || $entity->stato() !== StatoVerbale::SIGILLATO) {
+    return;
+  }
+
+  if ($precedente->get('stato')->value === StatoVerbale::SIGILLATO->value) {
+    return;
+  }
+
+  \Drupal::service('psiphos.registro_audit')->annota(
+    EventoAudit::VERBALE_SIGILLATO,
+    (int) ($entity->get('seduta')->target_id ?? 0),
+    0,
+    [
+      'formato' => (string) $entity->get('formato')->value,
+      'impronta_contenuto' => (string) $entity->get('impronta_contenuto')->value,
+      'impronta_documento' => (string) $entity->get('impronta_pdf')->value,
+    ]
+  );
+}
+
+/**
+ * Implements hook_user_logout().
+ *
+ * Chi si disconnette dal sito lascia l'aula. Il §3.4 prevede l'interruzione
+ * automatica per inattività, che presidia chi abbandona senza dirlo; una
+ * disconnessione è però una dichiarazione, e continuare a computare quella
+ * persona fra i presenti fino allo scadere del timeout significherebbe
+ * deliberare su un quorum che la comprende a torto.
+ */
+function psiphos_user_logout(\Drupal\Core\Session\AccountInterface $account): void {
+  $uscite = \Drupal::service('psiphos.aula')->abbandonaOgniSeduta($account);
+
+  if ($uscite > 0) {
+    \Drupal::logger('psiphos')->info('Disconnessione di @utente: uscita registrata da @numero sedute in corso.', [
+      '@utente' => $account->id(),
+      '@numero' => $uscite,
+    ]);
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function psiphos_cron(): void {
+  $ripulite = \Drupal::service('psiphos.registro_audit')->applicaRitenzione();
+
+  if ($ripulite > 0) {
+    \Drupal::logger('psiphos')->notice('Tracciature rimosse per @numero sedute che hanno superato i termini di conservazione.', [
+      '@numero' => $ripulite,
+    ]);
+  }
+}
+
+/**
+ * Implements hook_requirements().
+ *
+ * Il §5 dell'allegato tecnico chiede monitoraggio, sistemi di audit e misure
+ * di sicurezza verificabili; il §9 impone alle istituzioni scolastiche di
+ * accertare preventivamente la coerenza della soluzione adottata ai
+ * requisiti. Perché quell'accertamento sia possibile occorre che lo stato
+ * effettivo dei presidi sia leggibile senza aprire il codice: questa
+ * diagnostica compare nel rapporto sullo stato del sito, che è dove un
+ * tecnico guarda, e dice cosa è attivo e cosa no.
+ */
+function psiphos_requirements(string $phase): array {
+  if ($phase !== 'runtime') {
+    return [];
+  }
+
+  $requisiti = [];
+  $impostazioni = \Drupal::config('psiphos.settings');
+
+  // §3.2 — livello di autenticazione. Il rapporto riferisce quel che risulta
+  // installato, non quel che è stato dichiarato: un livello dichiarato e non
+  // erogato è la condizione che va segnalata, non nascosta dietro l'etichetta
+  // di ciò che si era inteso adottare.
+  $livello = (string) $impostazioni->get('autenticazione.livello');
+  $autenticazione = \Drupal::service('psiphos.attestazione_conformita')->statoAutenticazione(
+    $livello,
+    (string) $impostazioni->get('autenticazione.provider_forte')
+  );
+  $requisiti['psiphos_autenticazione'] = [
+    'title' => t('Psíphos — autenticazione al voto'),
+    'value' => match ($livello) {
+      'forte' => t('Autenticazione forte (@provider)', ['@provider' => $impostazioni->get('autenticazione.provider_forte')]),
+      'mfa' => t('Account personale con secondo fattore'),
+      default => t('Account personale del sito'),
+    },
+    'severity' => $autenticazione['stato'] === \Drupal\psiphos\Service\AttestazioneConformita::STATO_ATTENZIONE
+      ? REQUIREMENT_WARNING
+      : REQUIREMENT_OK,
+    'description' => trim($autenticazione['riferisce'] . ' ' . $autenticazione['nota']),
+  ];
+
+  // §3.4 — sessioni.
+  $esclusiva = (bool) $impostazioni->get('sessione.sessione_esclusiva');
+  $timeout = (int) $impostazioni->get('sessione.timeout_inattivita');
+  $requisiti['psiphos_sessioni'] = [
+    'title' => t('Psíphos — gestione delle sessioni'),
+    'value' => t('Inattività @minuti minuti; sessione esclusiva @stato', [
+      '@minuti' => round($timeout / 60),
+      '@stato' => $esclusiva ? t('attiva') : t('disattivata'),
+    ]),
+    'severity' => $esclusiva ? REQUIREMENT_OK : REQUIREMENT_WARNING,
+    'description' => $esclusiva
+      ? ''
+      : t('Il §3.4 richiede la prevenzione di accessi simultanei non autorizzati. Con la sessione esclusiva disattivata lo stesso avente diritto può restare accreditato da più dispositivi.'),
+  ];
+
+  // §7 — formato di conservazione.
+  $conservazione = \Drupal::service('psiphos.conservazione_documento');
+  $impedimento = $conservazione->impedimento();
+
+  $spiegazione = '';
+  if ($impedimento !== NULL) {
+    $spiegazione = (string) t('Le Linee guida AgID prescrivono il PDF/A. @impedimento I verbali saranno comunque sigillati, in PDF ordinario, e il formato effettivo resta registrato su ciascuno: va segnalato al responsabile della conservazione.', [
+      '@impedimento' => $impedimento,
+    ]);
+
+    // Il rimedio va offerto dove il problema viene letto. Interrogare il
+    // sistema costa qualche processo, ma accade solo quando c'è davvero un
+    // impedimento e su una pagina che si consulta di rado.
+    $altrove = $conservazione->cercaGhostscript();
+
+    $spiegazione .= ' ' . (string) ($altrove !== NULL
+      ? t('Risulta però presente in @percorso: indicare questo percorso in @impostazioni e salvare.', [
+        '@percorso' => $altrove,
+        '@impostazioni' => '/admin/config/psiphos',
+      ])
+      : t('La ricerca automatica non lo ha trovato in nessuno dei percorsi consueti: se il sistema operativo lo espone altrove, indicarne il percorso in @impostazioni.', [
+        '@impostazioni' => '/admin/config/psiphos',
+      ]));
+  }
+
+  $requisiti['psiphos_conservazione'] = [
+    'title' => t('Psíphos — formato di conservazione dei verbali'),
+    'value' => $impedimento === NULL ? t('PDF/A-2B') : t('PDF ordinario'),
+    'severity' => $impedimento === NULL ? REQUIREMENT_OK : REQUIREMENT_WARNING,
+    'description' => $spiegazione,
+  ];
+
+  // §5 e §6 — riservatezza dei documenti conservati.
+  $riservati = \Drupal\Core\Site\Settings::get('file_private_path');
+  $requisiti['psiphos_file_riservati'] = [
+    'title' => t('Psíphos — archiviazione dei verbali'),
+    'value' => $riservati ? t('File riservati configurati') : t('File riservati non configurati'),
+    'severity' => $riservati ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+    'description' => $riservati
+      ? ''
+      : t('I verbali contengono nominativi, presenze e, per il voto palese, le scelte espresse. Senza il file system riservato non possono essere archiviati al riparo da accessi diretti.'),
+  ];
+
+  // §2 e §5 — integrità delle tracciature.
+  $registro = \Drupal::service('psiphos.registro_audit');
+  $sedute = $registro->seduteTracciate();
+  $compromesse = [];
+  foreach ($sedute as $seduta) {
+    if (!$registro->verificaCatena($seduta)['integra']) {
+      $compromesse[] = $seduta;
+    }
+  }
+  $requisiti['psiphos_tracciature'] = [
+    'title' => t('Psíphos — integrità delle tracciature'),
+    'value' => $compromesse === []
+      ? t('@numero sedute tracciate, tutte verificate', ['@numero' => count($sedute)])
+      : t('@rotte sedute su @totale con catena interrotta', ['@rotte' => count($compromesse), '@totale' => count($sedute)]),
+    'severity' => $compromesse === [] ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+    'description' => $compromesse === []
+      ? ''
+      : t('Le tracciature delle sedute @sedute risultano rimosse o alterate. Il §2 richiede che lo svolgimento del procedimento deliberativo sia ricostruibile ex post.', [
+        '@sedute' => implode(', ', $compromesse),
+      ]),
+  ];
+
+  return $requisiti;
+}

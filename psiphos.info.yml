@@ -1,0 +1,17 @@
+name: "Psíphos"
+description: 'Psíphos, dal greco "sassolino" usato per votare nell''antica Grecia, è un modulo Drupal per lo svolgimento a distanza delle sedute collegiali deliberative (nota MIM prot. 3803 del 30/06/2026, art. 44 CCNL Istruzione e Ricerca 2019-2021).'
+package: "Neapoli"
+version: 2.0.0
+
+type: module
+core_version_requirement: ^10.3 || ^11
+configure: psiphos.settings
+dependencies:
+  - drupal:user
+  - drupal:options
+  - drupal:datetime
+  # Il motore di stampa dei documenti. Senza, il contenitore non si costruisce:
+  # «psiphos.conservazione_documento» riceve il gestore dei plugin di
+  # entity_print, e un modulo che lo usi senza dichiararlo si installa e poi
+  # rompe il sito al primo svuotamento della cache.
+  - entity_print:entity_print

@@ -1,0 +1,44 @@
+{#
+/**
+ * @file
+ * Intestazione dell'aula: stato della seduta, quorum, propria posizione.
+ *
+ * I valori aggiornati dal browser portano un attributo data-psiphos: sono
+ * gli unici che cambiano senza ricostruire la pagina.
+ *
+ * Variabili disponibili:
+ * - seduta: entità della seduta.
+ * - presenti: presenti che concorrono al quorum.
+ * - aventi_diritto: denominatore dei quorum.
+ * - costituita: TRUE se il quorum costitutivo è raggiunto.
+ * - presenza: stato dell'utente corrente, o NULL se non avente diritto.
+ */
+#}
+<div class="psiphos-aula__stato">
+  <div class="psiphos-aula__dato">
+    <span class="psiphos-aula__etichetta">{{ 'Stato della seduta'|t }}</span>
+    <span class="psiphos-aula__valore">{{ stato_seduta }}</span>
+  </div>
+
+  <div class="psiphos-aula__dato">
+    <span class="psiphos-aula__etichetta">{{ 'Presenti'|t }}</span>
+    <span class="psiphos-aula__valore">
+      <span data-psiphos="presenti">{{ presenti }}</span>
+      {{ 'su'|t }}
+      <span data-psiphos="aventi-diritto">{{ aventi_diritto }}</span>
+    </span>
+  </div>
+
+  <div class="psiphos-aula__dato">
+    <span class="psiphos-aula__etichetta">{{ 'Quorum costitutivo'|t }}</span>
+    <span class="psiphos-aula__valore{{ quorum_in_difetto ? ' psiphos-aula__quorum--mancante' : '' }}"
+          data-psiphos="quorum">{{ quorum_etichetta }}</span>
+  </div>
+
+  {% if stato_presenza %}
+    <div class="psiphos-aula__dato">
+      <span class="psiphos-aula__etichetta">{{ 'La tua posizione'|t }}</span>
+      <span class="psiphos-aula__valore">{{ stato_presenza }}</span>
+    </div>
+  {% endif %}
+</div>

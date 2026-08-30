@@ -1,0 +1,12 @@
+# Che cosa non entra nel pacchetto scaricato dalle scuole.
+#
+# I file restano nel repository — sono la rete di sicurezza dello sviluppo e
+# la prova documentale che il modulo fa quel che dichiara — ma non vengono
+# recapitati con `composer require`: sono script che si eseguono da riga di
+# comando su un sito vivo, alcuni dei quali creano, sigillano e cancellano
+# atti amministrativi.
+/tests            export-ignore
+/.gitattributes   export-ignore
+/.gitignore       export-ignore
+/.idea            export-ignore
+/.DS_Store        export-ignore

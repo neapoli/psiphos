@@ -1,0 +1,31 @@
+{#
+/**
+ * @file
+ * Elenco dei documenti che accompagnano il modulo.
+ *
+ * Variabili:
+ * - documenti: voci con il collegamento alla lettura e allo scaricamento.
+ */
+#}
+<div class="psiphos-documentazione">
+
+  <p>
+    {{ "Il §9 dell'allegato tecnico chiede all'istituzione di acquisire la documentazione tecnica della soluzione adottata. Questi sono i documenti che l'accompagnano, nell'ordine in cui vanno affrontati: i primi sei si esauriscono prima della prima seduta deliberativa, l'ultimo è la dichiarazione da sottoscrivere."|t }}
+  </p>
+
+  <ol class="psiphos-documentazione__elenco">
+    {% for documento in documenti %}
+      <li>
+        {{ documento.titolo }}
+        <span class="psiphos-verbale__nota">
+          — {{ documento.scarica }}{% for modello in documento.modelli %} · {{ modello }}{% endfor %}
+        </span>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <p class="psiphos-verbale__nota">
+    {{ "La guida si scarica per conservarla agli atti o inoltrarla al Responsabile della protezione dei dati e al Consiglio d'istituto. Dove la guida contiene un modello di lettera o di atto, il modulo precompilato è il documento da spedire o da sottoscrivere: riporta già l'intestazione dell'istituto, il dominio del sito e, dove nota, la denominazione del fornitore."|t }}
+  </p>
+
+</div>

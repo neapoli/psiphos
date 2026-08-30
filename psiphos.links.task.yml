@@ -1,0 +1,51 @@
+psiphos.seduta.canonical:
+  title: 'Convocazione'
+  route_name: entity.psiphos_seduta.canonical
+  base_route: entity.psiphos_seduta.canonical
+
+psiphos.seduta.aventi_diritto:
+  title: 'Aventi diritto'
+  route_name: psiphos.seduta.aventi_diritto
+  base_route: entity.psiphos_seduta.canonical
+  weight: 10
+
+psiphos.aula:
+  title: 'Aula'
+  route_name: psiphos.aula
+  base_route: entity.psiphos_seduta.canonical
+  weight: 20
+
+psiphos.seduta.edit:
+  title: 'Modifica'
+  route_name: entity.psiphos_seduta.edit_form
+  base_route: entity.psiphos_seduta.canonical
+  weight: 30
+
+psiphos.seduta.verbale:
+  title: 'Verbale'
+  route_name: psiphos.seduta.verbale
+  base_route: entity.psiphos_seduta.canonical
+  weight: 25
+
+psiphos.verbale.canonical:
+  title: 'Verbale'
+  route_name: entity.psiphos_verbale.canonical
+  base_route: entity.psiphos_verbale.canonical
+
+psiphos.verbale.redigi:
+  title: 'Redigi'
+  route_name: entity.psiphos_verbale.edit_form
+  base_route: entity.psiphos_verbale.canonical
+  weight: 10
+
+psiphos.verbale.verifica:
+  title: 'Verifica di integrità'
+  route_name: psiphos.verbale.verifica
+  base_route: entity.psiphos_verbale.canonical
+  weight: 20
+
+psiphos.seduta.tracciature:
+  title: 'Tracciature'
+  route_name: psiphos.seduta.tracciature
+  base_route: entity.psiphos_seduta.canonical
+  weight: 40

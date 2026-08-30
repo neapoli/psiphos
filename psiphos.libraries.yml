@@ -1,0 +1,18 @@
+aula:
+  version: 1.0.0
+  js:
+    js/psiphos-aula.js: {}
+  css:
+    component:
+      css/psiphos-aula.css: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.ajax
+    - core/drupalSettings
+    - core/once
+
+verbale:
+  version: 1.0.0
+  css:
+    component:
+      css/psiphos-verbale.css: {}

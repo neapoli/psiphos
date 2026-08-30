@@ -1,0 +1,27 @@
+langcode: it
+fornitore:
+  denominazione: ''
+  partita_iva: ''
+  contatto: ''
+hosting:
+  denominazione: ''
+  partita_iva: ''
+  sede: ''
+  contatto: ''
+  ubicazione_dati: ''
+  nomina_protocollo: ''
+  nomina_data: ''
+  riscontro_protocollo: ''
+  riscontro_data: ''
+autenticazione:
+  livello: mfa
+  provider_forte: ''
+  etichetta_provider_forte: ''
+sessione:
+  timeout_inattivita: 900
+  sessione_esclusiva: true
+conservazione:
+  pdfa_attivo: true
+  ghostscript: /usr/bin/gs
+audit:
+  ritenzione_giorni: 3650

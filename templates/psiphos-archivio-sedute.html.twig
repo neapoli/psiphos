@@ -1,0 +1,67 @@
+{#
+/**
+ * @file
+ * L'archivio delle sedute di chi guarda.
+ *
+ * Qui la tabella è la forma giusta, dove sulla scrivania non lo era: un
+ * archivio si scorre in verticale cercando una riga, e le colonne incolonnate
+ * sono ciò che rende possibile scorrerlo.
+ *
+ * Variabili:
+ * - sedute: le sedute della pagina corrente.
+ * - totale: quante ne risultano in tutto.
+ * - impaginatore: la costruzione del paginatore.
+ */
+#}
+{{ ritorno }}
+
+{% if sedute is not empty or filtrato %}
+  <p class="psiphos-archivio__totale">
+    {% if filtrato %}
+      {{ 'Sedute corrispondenti ai filtri: @totale.'|t({'@totale': totale}) }}
+    {% else %}
+      {{ 'Sedute che mi riguardano: @totale. Vi figuro come componente, Presidente, segretario o convocante.'|t({'@totale': totale}) }}
+    {% endif %}
+  </p>
+{% endif %}
+
+{{ filtri_resi }}
+
+{% if sedute is empty %}
+  {% if filtrato %}
+    <p>{{ "Nessuna seduta corrisponde ai filtri impostati."|t }}</p>
+  {% else %}
+    <p>{{ "Non risulta alcuna seduta collegiale che mi riguardi."|t }}</p>
+  {% endif %}
+{% else %}
+  <div class="psiphos-archivio">
+    <table class="psiphos-archivio__tabella">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'Data'|t({}, {'context': 'Psiphos seduta'}) }}</th>
+          <th scope="col">{{ 'Oggetto'|t }}</th>
+          <th scope="col">{{ 'Organo'|t }}</th>
+          <th scope="col">{{ 'A.s.'|t }}</th>
+          <th scope="col">{{ 'Stato'|t }}</th>
+          <th scope="col">{{ 'Ruolo'|t }}</th>
+          <th scope="col">{{ 'Atti'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for voce in sedute %}
+          <tr>
+            <td class="psiphos-archivio__quando">{{ voce.quando ?: '—' }}</td>
+            <td>{{ voce.titolo }}</td>
+            <td>{{ voce.organo }}</td>
+            <td>{{ voce.anno ?: '—' }}</td>
+            <td>{{ voce.stato_etichetta }}</td>
+            <td>{{ voce.ruolo ?: '—' }}</td>
+            <td>{{ voce.verbale ?: '—' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {{ impaginatore }}
+{% endif %}

@@ -1,0 +1,104 @@
+{#
+/**
+ * @file
+ * Atto di nomina del fornitore dell'infrastruttura a responsabile.
+ *
+ * È l'atto che manca quando la scuola ha nominato il manutentore e crede di
+ * aver esaurito l'art. 28: chi ospita il sito tratta gli stessi dati e ne
+ * detiene i supporti, e senza questo atto il rischio infrastrutturale del §5
+ * resta senza titolare.
+ *
+ * Molti fornitori propongono un proprio modello di accordo sul trattamento.
+ * Se lo fanno, si sottoscrive quello: questo serve quando non lo propongono,
+ * oppure per confrontarne il contenuto.
+ */
+#}
+{% include '@psiphos/psiphos-carta-istituto.html.twig' with {istituto: istituto} only %}
+
+<h1>{{ 'Atto di nomina a responsabile del trattamento'|t }}<br>
+  <span class="nota">{{ "Fornitore del servizio di hosting — art. 28 del Regolamento (UE) 2016/679"|t }}</span></h1>
+
+<p class="nota">
+  <strong>{{ "Da usare se il fornitore non propone un proprio modello."|t }}</strong>
+  {{ "La richiesta di documentazione chiede al fornitore, al punto 1, il suo accordo sul trattamento dei dati: quasi tutti ne hanno uno, ed è quello che si sottoscrive, perché è redatto sull'infrastruttura che erogano davvero. Questo atto serve quando non lo propongono, quando tardano oltre i tempi degli adempimenti preliminari, oppure come termine di confronto: gli articoli 5, 8 e 10 — registri del motore di banca dati, ubicazione dei dati, termine di notifica delle violazioni — sono i punti sui quali i modelli standard tacciono più spesso, e vanno cercati nel loro testo prima di firmarlo."|t }}
+</p>
+
+<p><strong>{{ 'Il titolare del trattamento'|t }}</strong><br>
+  {{ istituto.istituto }}{% if istituto.comune %}, {{ 'con sede in'|t }} {{ istituto.indirizzo }} — {{ istituto.comune }}{% if istituto.provincia %} ({{ istituto.provincia }}){% endif %}{% endif %}{% if istituto.codice_fiscale %}, {{ 'C.F.'|t }} {{ istituto.codice_fiscale }}{% endif %},<br>
+  {{ 'in persona del Dirigente scolastico pro tempore'|t }} <span class="vuoto">_______________________________</span>
+</p>
+
+<p style="text-align: center"><strong>{{ 'nomina'|t }}</strong></p>
+
+<p><strong>{{ 'Il responsabile del trattamento'|t }}</strong><br>
+  {% if hosting.denominazione %}
+    {{ hosting.denominazione }}{% if hosting.sede %}, {{ 'con sede in'|t }} {{ hosting.sede }}{% endif %}{% if hosting.partita_iva %}, {{ 'P. IVA / C.F.'|t }} {{ hosting.partita_iva }}{% endif %}{% if hosting.contatto %}, {{ hosting.contatto }}{% endif %},<br>
+    {{ 'in persona di'|t }} <span class="vuoto">_______________________________</span>
+  {% else %}
+    <span class="vuoto">_______________________________________________________</span><br>
+    <span class="nota">{{ "(il fornitore dell'infrastruttura non è indicato nelle impostazioni del modulo: indicarlo in /admin/config/psiphos perché l'atto risulti completo)"|t }}</span>
+  {% endif %}
+</p>
+
+<p>
+  {{ "responsabile del trattamento dei dati personali per le attività di seguito descritte, che il responsabile dichiara di essere in grado di svolgere fornendo garanzie sufficienti ai sensi dell'art. 28, paragrafo 1, del Regolamento."|t }}
+</p>
+
+<h2>{{ 'Art. 1 — Oggetto e durata'|t }}</h2>
+<p>{{ "Erogazione del servizio di hosting del sito istituzionale @dominio: messa a disposizione e gestione dell'infrastruttura di calcolo, memorizzazione e rete, del motore di banca dati e dei relativi servizi accessori, ivi comprese le copie di sicurezza."|t({'@dominio': dominio}) }}</p>
+<p>{{ 'Durata: per la durata del contratto di servizio, rinnovabile.'|t }}</p>
+
+<h2>{{ 'Art. 2 — Natura e finalità'|t }}</h2>
+<p>{{ "Il trattamento consiste nella conservazione e nell'elaborazione dei dati contenuti nel sito e nella banca dati per la sola finalità di erogare il servizio. Il responsabile non accede ai dati se non per necessità tecnica documentata, non li utilizza per finalità proprie e non determina finalità e mezzi del trattamento, che restano del titolare."|t }}</p>
+
+<h2>{{ 'Art. 3 — Tipi di dati e categorie di interessati'|t }}</h2>
+<p>{{ "Dati anagrafici e di contatto, credenziali di accesso, dati relativi alla partecipazione alle sedute degli organi collegiali e ai voti espressi in forma palese, contenuti pubblicati, tracciature tecniche. Interessati: personale docente e ATA, componenti degli organi collegiali, alunni e famiglie, utenti del sito."|t }}</p>
+<p>{{ "Il titolare rende noto che sull'infrastruttura si svolgono operazioni di voto a scrutinio segreto degli organi collegiali."|t }}</p>
+
+<h2>{{ 'Art. 4 — Istruzioni del titolare'|t }}</h2>
+<p>{{ "Il responsabile tratta i dati soltanto su istruzione documentata del titolare, e informa immediatamente il titolare qualora un'istruzione violi il Regolamento o altre disposizioni sulla protezione dei dati."|t }}</p>
+
+<h2>{{ 'Art. 5 — Registri del motore di banca dati'|t }}</h2>
+<p>{{ "Costituisce istruzione specifica del titolare quanto segue. I registri delle transazioni del motore di banca dati — binary log, redo log, registri delle interrogazioni — conservano l'ordine di scrittura delle operazioni e consentono, a chi vi acceda, di ricostruire la corrispondenza fra chi ha votato e il voto espresso in una votazione a scrutinio segreto. Si tratta di una correlazione deterministica, non attenuabile dall'applicazione, che si produce sotto di essa."|t }}</p>
+<p>{{ "Il responsabile pertanto: limita l'accesso a tali registri al personale tecnico strettamente necessario, sotto la propria autorità e vincolato alla riservatezza; non ne estrae né comunica il contenuto ad alcuno, salvo obbligo di legge di cui dà notizia al titolare ove consentito; riduce, su richiesta del titolare e ove tecnicamente possibile, il periodo di conservazione per il dominio in oggetto; informa il titolare dell'eventuale impossibilità tecnica, indicandone la ragione."|t }}</p>
+<p class="nota">{{ "Il presente articolo non presuppone che le misure siano già in essere. Ne costituisce la richiesta, e la risposta del responsabile — anche negativa — è l'informazione che il titolare deve acquisire per la valutazione d'impatto."|t }}</p>
+
+<h2>{{ 'Art. 6 — Riservatezza'|t }}</h2>
+<p>{{ "Il responsabile garantisce che le persone autorizzate al trattamento sotto la propria autorità si siano impegnate alla riservatezza o abbiano un adeguato obbligo legale di riservatezza."|t }}</p>
+
+<h2>{{ 'Art. 7 — Misure di sicurezza'|t }}</h2>
+<p>{{ "Il responsabile adotta le misure tecniche e organizzative adeguate di cui all'art. 32, in particolare: cifratura dei dati in transito e, ove disponibile, dei dati a riposo e delle copie di sicurezza; separazione dei dati del titolare da quelli di altri clienti; controllo degli accessi amministrativi all'infrastruttura, con autenticazione a più fattori e registrazione degli accessi; aggiornamento tempestivo dei sistemi e correzione delle vulnerabilità note; procedura documentata di copia di sicurezza e di ripristino, con verifica periodica dell'effettiva ripristinabilità."|t }}</p>
+
+<h2>{{ 'Art. 8 — Ubicazione dei dati'|t }}</h2>
+{% if hosting.ubicazione_dati %}
+  <p>{{ "I dati, le copie di sicurezza e i registri risiedono in @paese, come dichiarato dal responsabile."|t({'@paese': hosting.ubicazione_dati}) }} {{ "Ogni variazione dell'ubicazione, e ogni trasferimento verso Paesi terzi, è comunicata preventivamente al titolare con l'indicazione della base giuridica ai sensi del Capo V del Regolamento."|t }}</p>
+{% else %}
+  <p>{{ "Il responsabile indica il Paese in cui risiedono fisicamente il server, la banca dati, i registri e le copie di sicurezza:"|t }} <span class="vuoto">_______________________________</span>. {{ "Ogni variazione dell'ubicazione, e ogni trasferimento verso Paesi terzi, è comunicata preventivamente al titolare con l'indicazione della base giuridica ai sensi del Capo V del Regolamento."|t }}</p>
+{% endif %}
+
+<h2>{{ 'Art. 9 — Sub-responsabili'|t }}</h2>
+<p>{{ "Il responsabile che si avvalga di altri responsabili ne dà comunicazione scritta al titolare, indicandone denominazione, attività affidata e Paese di stabilimento, e impone loro per contratto i medesimi obblighi del presente atto. Il titolare può opporsi entro quindici giorni dalla comunicazione."|t }}</p>
+
+<h2>{{ 'Art. 10 — Violazioni dei dati personali'|t }}</h2>
+<p>{{ "Il responsabile informa il titolare senza ingiustificato ritardo e comunque entro"|t }}
+  <span class="vuoto">______</span> {{ "ore da quando ne viene a conoscenza, all'indirizzo"|t }}
+  {{ istituto.pec ?: '_______________________________' }},
+  {{ "fornendo gli elementi necessari alla notifica di cui all'art. 33, ivi compresa l'indicazione se la violazione abbia interessato i registri del motore di banca dati."|t }}</p>
+
+<h2>{{ 'Art. 11 — Restituzione o cancellazione'|t }}</h2>
+<p>{{ "Alla cessazione del servizio il responsabile, a scelta del titolare, restituisce in formato utilizzabile o cancella i dati, le copie e i registri esistenti, salvo obblighi di conservazione di legge, e ne dà conferma scritta indicando la data della cancellazione."|t }}</p>
+
+<h2>{{ 'Art. 12 — Assistenza e dimostrazione della conformità'|t }}</h2>
+<p>{{ "Il responsabile assiste il titolare nel dare seguito alle richieste di esercizio dei diritti degli interessati, nella valutazione d'impatto e nella consultazione preventiva; mette a disposizione le informazioni necessarie a dimostrare il rispetto degli obblighi del presente atto e consente e contribuisce alle verifiche del titolare o di un incaricato da questi designato."|t }}</p>
+
+<h2>{{ 'Art. 13 — Attività escluse'|t }}</h2>
+<p>{{ "Sono estranee al presente incarico: la manutenzione applicativa del sito, l'aggiornamento del sistema di gestione dei contenuti e dei suoi componenti, oggetto di distinta nomina; la conservazione a norma dei documenti informatici; le decisioni organizzative del titolare."|t }}</p>
+
+<h2>{{ 'Art. 14 — Registro'|t }}</h2>
+<p>{{ "Il responsabile tiene il registro delle categorie di attività di trattamento svolte per conto del titolare, ai sensi dell'art. 30, paragrafo 2."|t }}</p>
+
+<div class="firma">
+  <p>{{ 'Luogo e data'|t }} <span class="vuoto">_______________________________</span></p>
+  <p>{{ 'Il titolare del trattamento'|t }} <span class="vuoto">_______________________________</span></p>
+  <p>{{ 'Per accettazione, il responsabile'|t }} <span class="vuoto">_______________________________</span></p>
+</div>

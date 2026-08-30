@@ -1,0 +1,127 @@
+{#
+/**
+ * @file
+ * Descrizione tecnica del trattamento, da allegare alla valutazione d'impatto.
+ *
+ * Non è una valutazione d'impatto e non deve somigliarvi: la valutazione è del
+ * titolare, e una DPIA redatta dal fornitore e firmata dal dirigente senza
+ * istruttoria propria non è una valutazione del titolare. Questo documento
+ * fornisce la sola materia tecnica — quella che il titolare non può ricavare
+ * senza leggere il codice — nella configurazione in essere.
+ */
+#}
+{% include '@psiphos/psiphos-carta-istituto.html.twig' with {istituto: istituto} only %}
+
+<h1>{{ 'Descrizione tecnica del trattamento'|t }}<br>
+  <span class="nota">{{ "Allegato alla valutazione d'impatto sulla protezione dei dati — art. 35 del Regolamento (UE) 2016/679"|t }}</span></h1>
+
+<p class="nota">
+  {{ "Questo documento non è una valutazione d'impatto e non la sostituisce. La valutazione è dell'istituzione scolastica, che del trattamento è titolare, e va condotta con il proprio Responsabile della protezione dei dati. Qui si fornisce la descrizione tecnica del trattamento nella configurazione in essere alla data di produzione: è la materia che il titolare non può ricavare senza esaminare il sistema."|t }}
+</p>
+
+<h2>{{ '1. Trattamento descritto'|t }}</h2>
+<p>{{ "Svolgimento a distanza delle sedute degli organi collegiali con voto deliberativo, mediante il modulo Psíphos installato sul sito istituzionale @dominio. Le operazioni di voto si svolgono per intero nel sistema informativo dell'istituzione: nessun dato di seduta è trasmesso a servizi esterni."|t({'@dominio': dominio}) }}</p>
+<p>{{ "Finalità: formazione della volontà degli organi collegiali e documentazione delle deliberazioni assunte, in attuazione dell'art. 44 del CCNL comparto Istruzione e Ricerca del 18/01/2024 e della nota MIM prot. 3803 del 30/06/2026."|t }}</p>
+
+<h2>{{ '2. Categorie di interessati'|t }}</h2>
+<p>{{ "Personale docente e ATA componente degli organi collegiali; soggetti designati alla presidenza e alla verbalizzazione."|t }}</p>
+
+<h2>{{ '3. Dati trattati'|t }}</h2>
+<table>
+  <thead>
+    <tr><th scope="col">{{ 'Dato'|t }}</th><th scope="col">{{ 'Dove'|t }}</th><th scope="col">{{ 'Conservazione'|t }}</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>{{ 'Identificativo utenza, nominativo'|t }}</td><td>{{ 'elenco aventi diritto, presenze'|t }}</td><td>{{ 'fino alla cancellazione della seduta'|t }}</td></tr>
+    <tr><td>{{ 'Ingresso, uscita, ultimo contatto'|t }}</td><td>{{ 'registro presenze'|t }}</td><td>{{ 'come sopra'|t }}</td></tr>
+    <tr><td>{{ 'Impronta della sessione (HMAC-SHA256)'|t }}</td><td>{{ 'registro presenze'|t }}</td><td>{{ 'azzerata alla chiusura della seduta'|t }}</td></tr>
+    <tr><td>{{ 'Partecipazione al voto'|t }}</td><td>{{ 'attestazioni di voto'|t }}</td><td>{{ 'come sopra'|t }}</td></tr>
+    <tr><td><strong>{{ 'Voto espresso, con nominativo'|t }}</strong></td><td>{{ 'voti palesi'|t }}</td><td>{{ 'come sopra'|t }}</td></tr>
+    <tr><td><strong>{{ 'Voto espresso, senza alcun riferimento al votante'|t }}</strong></td><td>{{ 'urna segreta'|t }}</td><td>{{ 'come sopra'|t }}</td></tr>
+    <tr><td>{{ "Giustificazione dell'assenza (testo libero)"|t }}</td><td>{{ 'registro presenze, verbale sigillato'|t }}</td><td>{{ 'termini di conservazione degli atti'|t }}</td></tr>
+    <tr><td>{{ 'Nominativi, presenze, esiti, voti palesi'|t }}</td><td>{{ 'verbale sigillato ed estratti di delibera'|t }}</td><td>{{ 'termini di conservazione degli atti'|t }}</td></tr>
+    <tr><td>{{ 'Eventi del procedimento con identificativo utenza'|t }}</td><td>{{ 'tracciature tecniche'|t }}</td>
+      <td>{% if configurazione.ritenzione %}{{ '@anni anni dalla chiusura'|t({'@anni': configurazione.ritenzione}) }}{% elseif configurazione.ritenzione_giorni %}{{ '@giorni giorni dalla chiusura'|t({'@giorni': configurazione.ritenzione_giorni}) }}{% else %}{{ 'senza limite di tempo'|t }}{% endif %}</td></tr>
+  </tbody>
+</table>
+
+<p>{{ "Non sono trattati: indirizzi IP, dati di navigazione, identificativi di dispositivo, agenti utente, registrazioni audio o video, dati biometrici."|t }}</p>
+
+<p><strong>{{ "Categorie particolari di dati (art. 9)."|t }}</strong>
+  {{ "Il sistema non ne raccoglie, ma non può impedire che vi finiscano: la giustificazione dell'assenza è un campo di testo libero, e chi verbalizza può annotarvi il motivo di salute che l'assenza ha determinato. Quel testo entra nel verbale sigillato, dove diviene immodificabile. Nessun controllo automatico può distinguere «assenza giustificata» da un'indicazione clinica: la misura è organizzativa e consiste nell'istruire chi redige a indicare la sola qualificazione formale."|t }}</p>
+
+<h2>{{ '4. Rischio principale: correlazione fra identità e voto segreto'|t }}</h2>
+<p>{{ "È il rischio che qualifica il trattamento e che rende necessaria la valutazione d'impatto. La lesione temuta non è la divulgazione di un dato ma la compromissione della libertà di voto, e si produce anche solo per la percezione che la correlazione sia possibile."|t }}</p>
+
+<p><strong>{{ 'Misure tecniche adottate.'|t }}</strong>
+  {{ "Attestazione di partecipazione e scheda risiedono in due tabelle prive di colonne comuni, scritte nella stessa transazione: l'una registra chi ha votato, l'altra che cosa è stato votato, e non esiste dato che le colleghi. Né l'una né l'altra portano marche temporali. La scheda ha chiave primaria casuale a 62 bit, per cui l'ordine di memorizzazione non conserva quello di deposito. Le preferenze sono ridotte a forma canonica ordinata. Le tracciature registrano che si è votato, mai che cosa. Il sigillo dell'urna, calcolato sull'insieme ordinato delle schede, consente il riconteggio senza introdurre alcuna sequenza."|t }}</p>
+
+<p><strong>{{ 'Rischio residuo.'|t }}</strong>
+  {{ "Le misure impediscono la correlazione a chi guardi le tabelle. Resta esposto chi disponga dei registri del motore di banca dati — binary log, redo log, registri delle interrogazioni — che stanno sotto l'applicazione e ne conservano l'ordine di scrittura: chi vi accede legge la sequenza in cui le schede sono state deposte e, accostandola alle tracciature, ricostruisce la corrispondenza fra votante e voto. Non è una correlazione statistica ma deterministica, non si esaurisce con la chiusura dell'urna e dura quanto i registri sono conservati. Nessuna applicazione può eliminarla, perché nasce sotto di essa: su infrastruttura condivisa quei registri sono nella disponibilità del fornitore dell'hosting, e il contenimento è organizzativo."|t }}</p>
+
+<p><strong>{{ "Chi detiene quei registri."|t }}</strong>
+  {% if hosting.denominazione %}
+    {{ "L'infrastruttura è erogata da @nome@sede. È il soggetto nella cui disponibilità stanno i registri del motore di banca dati, e il contenimento del rischio residuo dipende dagli obblighi che gli sono imposti."|t({'@nome': hosting.denominazione, '@sede': hosting.sede ? ', con sede in ' ~ hosting.sede : ''}) }}
+    {% if hosting.nomina_protocollo or hosting.nomina_data %}
+      {{ "È stato nominato responsabile del trattamento ai sensi dell'art. 28 con atto"|t }}{% if hosting.nomina_protocollo %} {{ 'prot. @n'|t({'@n': hosting.nomina_protocollo}) }}{% endif %}{% if hosting.nomina_data %} {{ 'del @d'|t({'@d': hosting.nomina_data|date('d/m/Y')}) }}{% endif %}, {{ "il cui art. 5 detta le istruzioni specifiche sui registri delle transazioni."|t }}
+    {% else %}
+      <strong>{{ "Non risulta indicato alcun atto di nomina a responsabile del trattamento: finché non è sottoscritto, il rischio residuo resta senza presidio organizzativo e non è ponderabile."|t }}</strong>
+    {% endif %}
+    {% if hosting.riscontro_protocollo or hosting.riscontro_data %}
+      {{ "Le informazioni sull'infrastruttura sono state acquisite con riscontro"|t }}{% if hosting.riscontro_protocollo %} {{ 'prot. @n'|t({'@n': hosting.riscontro_protocollo}) }}{% endif %}{% if hosting.riscontro_data %} {{ 'del @d'|t({'@d': hosting.riscontro_data|date('d/m/Y')}) }}{% endif %}, {{ "che va esaminato insieme al presente documento: le misure ivi dichiarate sono riferite dal fornitore e non verificate dal sistema."|t }}
+    {% else %}
+      <strong>{{ "Non risulta acquisito alcun riscontro del fornitore sulle misure infrastrutturali: l'estensione del rischio residuo è, allo stato, indeterminata, e ricorre l'ipotesi da valutare ai sensi dell'art. 36."|t }}</strong>
+    {% endif %}
+  {% else %}
+    <strong>{{ "Il fornitore dell'infrastruttura non è indicato nelle impostazioni del modulo. Finché non lo si individua, il rischio residuo non è attribuibile ad alcun soggetto determinato e la valutazione non può dirsi conclusa: indicarlo in /admin/config/psiphos."|t }}</strong>
+  {% endif %}
+</p>
+
+<h2>{{ '5. Altri rischi e misure'|t }}</h2>
+<table>
+  <thead><tr><th scope="col">{{ 'Rischio'|t }}</th><th scope="col">{{ 'Misura'|t }}</th></tr></thead>
+  <tbody>
+    <tr><td>{{ "Voto espresso da persona diversa dall'avente diritto"|t }}</td><td>{{ 'credenziali personali; sessione unica per avente diritto; livello di autenticazione riferito al § 6'|t }}</td></tr>
+    <tr><td>{{ 'Voto multiplo'|t }}</td><td>{{ 'unicità imposta da vincolo di integrità della banca dati, non da controllo applicativo'|t }}</td></tr>
+    <tr><td>{{ "Alterazione dell'esito dopo la chiusura"|t }}</td><td>{{ "sigillo SHA-256 sull'insieme ordinato delle schede; riconteggio verificabile in qualunque momento"|t }}</td></tr>
+    <tr><td>{{ 'Alterazione del verbale'|t }}</td><td>{{ 'esportazione conservata al sigillo; doppia impronta su contenuto e documento; verbale non modificabile'|t }}</td></tr>
+    <tr><td>{{ 'Rimozione o alterazione delle tracciature'|t }}</td><td>{{ 'catena di impronte per seduta, con verifica automatica'|t }}</td></tr>
+    <tr><td>{{ 'Voto raccolto dopo la chiusura della seduta'|t }}</td><td>{{ 'la seduta non si chiude finché una votazione è aperta o sospesa; su seduta chiusa nessuna scheda è accettata'|t }}</td></tr>
+    <tr><td>{{ 'Deliberazione su quorum fittizio'|t }}</td><td>{{ 'decadenza della presenza alla cessazione del collegamento; appello nominale disponibile al Presidente. Vedi il limite sotto'|t }}</td></tr>
+    <tr><td>{{ 'Conservazione eccessiva'|t }}</td><td>{{ 'rimozione automatica delle tracciature dopo il termine configurato, solo su sedute verbalizzate'|t }}</td></tr>
+    <tr><td>{{ 'Accesso non autorizzato ai verbali'|t }}</td><td>{{ "archiviazione fra i file riservati; consultazione circoscritta all'organo che li ha prodotti, secondo il § 8"|t }}</td></tr>
+  </tbody>
+</table>
+
+<p><strong>{{ "Limite: la presenza attesta il collegamento, non l'attenzione."|t }}</strong>
+  {{ "Il dispositivo segnala la propria presenza finché la pagina dell'aula resta aperta, senza che l'avente diritto debba fare alcunché. Ne segue che un collegamento lasciato aperto da chi si è allontanato continua a concorrere al numero legale: il sistema non distingue, e non può distinguere, la presenza dall'attenzione. Il presidio è procedurale e sta in mano al Presidente, che dispone dell'appello nominale in qualunque momento."|t }}</p>
+
+<h2>{{ '6. Configurazione in essere'|t }}</h2>
+<p class="nota">{{ "I valori seguenti sono quelli configurati alla data di produzione del presente documento e concorrono alla ponderazione del rischio."|t }}</p>
+<table>
+  <tbody>
+    <tr><th scope="row">{{ 'Autenticazione al voto'|t }}</th><td>{{ configurazione.autenticazione.riferisce }}</td></tr>
+    <tr><th scope="row">{{ 'Sessione esclusiva'|t }}</th><td>{{ configurazione.sessione_esclusiva ? "attiva: l'ingresso da un nuovo dispositivo revoca l'accreditamento del precedente"|t : 'disattivata: un avente diritto può essere accreditato da più dispositivi contemporaneamente'|t }}</td></tr>
+    <tr><th scope="row">{{ 'Decadenza della presenza'|t }}</th><td>{{ 'dopo @minuti minuti senza contatto dal dispositivo'|t({'@minuti': configurazione.minuti}) }}</td></tr>
+    <tr><th scope="row">{{ 'Formato di conservazione'|t }}</th><td>{{ configurazione.conservazione_disponibile ? 'PDF/A-2B'|t : 'PDF ordinario: la conversione nel formato di conservazione non è producibile su questo server'|t }}</td></tr>
+    <tr><th scope="row">{{ "Fornitore dell'infrastruttura"|t }}</th><td>{{ hosting.denominazione ?: 'non indicato'|t }}</td></tr>
+    <tr><th scope="row">{{ 'Ubicazione dei dati, come dichiarata'|t }}</th><td>{{ hosting.ubicazione_dati ?: 'non dichiarata'|t }}</td></tr>
+    <tr><th scope="row">{{ 'Conservazione delle tracciature'|t }}</th><td>{% if configurazione.ritenzione %}{{ '@anni anni dalla chiusura della seduta'|t({'@anni': configurazione.ritenzione}) }}{% elseif configurazione.ritenzione_giorni %}{{ '@giorni giorni dalla chiusura della seduta'|t({'@giorni': configurazione.ritenzione_giorni}) }}{% else %}{{ 'nessuna rimozione automatica'|t }}{% endif %}</td></tr>
+  </tbody>
+</table>
+
+<h2>{{ "7. Chi accede ai verbali, e per quale titolo"|t }}</h2>
+<p>{{ "La consultazione di un verbale non dipende dal permesso posseduto ma dall'appartenenza all'organo che lo ha prodotto. Vi accede chi, su quella determinata seduta, figura fra gli aventi diritto, ovvero l'ha presieduta, verbalizzata o convocata. Chi non ricorre in alcuno di questi titoli non vi accede, quale che sia il suo permesso: un docente non apre il verbale del Consiglio di una classe che non è la sua, né quello del gruppo di lavoro operativo di un alunno di cui non fa parte. È il presidio che circoscrive i dati sulla salute di alunni identificati a chi ha titolo per conoscerli."|t }}</p>
+<p>{{ "Fanno eccezione il dirigente scolastico e il personale di segreteria da lui individuato, ai quali è attribuito un permesso distinto e riservato che consente la consultazione di ogni organo: rispondono degli atti e ne curano l'accesso."|t }}</p>
+<p><strong>{{ "I titoli sono ancorati alla seduta, non al ruolo in essere."|t }}</strong>
+  {{ "Chi ha presieduto, verbalizzato o convocato resta scritto su quella seduta, e continua ad accedervi anche quando cessa dall'incarico: un coordinatore che l'anno successivo non è più tale conserva i propri atti e perde la facoltà di convocarne di nuovi; un dirigente che lascia l'istituto conserva le sedute che ha presieduto e perde la consultazione generale. È la scelta che consente all'archivio di reggere il ricambio annuale degli incarichi senza che nessuno perda accesso a ciò che ha compiuto, e senza che alcuno lo conservi su ciò che non lo riguarda più."|t }}</p>
+
+<h2>{{ '8. Diritti degli interessati'|t }}</h2>
+<p>{{ "Accesso e rettifica sono esercitabili sui dati identificativi e sul registro delle presenze. Non sono esercitabili sul voto a scrutinio segreto, e non per una scelta del titolare: il dato che consentirebbe di individuare il voto di una persona determinata non esiste, e ricorre l'art. 11 del Regolamento. Cancellazione e limitazione sono compresse dalla natura di atto amministrativo del verbale e dai termini di conservazione degli atti degli organi collegiali."|t }}</p>
+
+<h2>{{ "9. Misure che restano a carico dell'istituzione"|t }}</h2>
+<p>{{ "Il modulo non le attua e non può attuarle: trasporto cifrato obbligatorio; cifratura dei supporti e delle copie di sicurezza; applicazione tempestiva degli aggiornamenti di sicurezza; segregazione degli ambienti; copie di sicurezza verificate e prova periodica del ripristino; procedura di gestione degli incidenti; disciplina degli accessi amministrativi alla banca dati e ai suoi registri; adozione dell'articolo di Regolamento d'istituto; nomina a responsabile del trattamento del fornitore dell'hosting e di chi ha in carico la manutenzione del sito."|t }}</p>
+
+<div class="firma">
+  <p class="nota">{{ "Documento prodotto dal sistema nella configurazione in essere alla data odierna. Ogni successiva modifica delle impostazioni ne comporta la riproduzione: la valutazione d'impatto si fonda sulla configurazione descritta, e una configurazione diversa è un trattamento diverso."|t }}</p>
+</div>

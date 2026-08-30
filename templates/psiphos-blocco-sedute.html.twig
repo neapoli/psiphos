@@ -1,0 +1,108 @@
+{#
+/**
+ * @file
+ * Le sedute collegiali dell'utente, sulla scrivania del personale.
+ *
+ * Ogni voce dichiara che cos'è e ogni dato porta la propria etichetta: una
+ * data, un titolo e la parola «convocata» accostati non dicono a che cosa si
+ * riferiscano, e un blocco che va interpretato non viene letto. La struttura
+ * è la stessa per tutte le sedute; cambia il peso, perché solo su quella in
+ * corso si deve agire adesso.
+ *
+ * Variabili:
+ * - sedute: elenco di voci, in ordine di urgenza.
+ * - eccedenti: quante non sono state mostrate.
+ */
+#}
+{% if sedute is empty %}
+  <p class="psiphos-sedute__vuoto">
+    {{ "Non risulta alcuna seduta collegiale da mostrare. Per convocarne una, usare il comando qui sotto."|t }}
+  </p>
+{% endif %}
+
+<ul class="psiphos-sedute">
+  {% for voce in sedute %}
+    <li class="psiphos-sedute__voce psiphos-sedute__voce--{{ voce.stato }}
+      {{ voce.in_rilievo ? 'psiphos-sedute__voce--rilievo' }}
+      {{ voce.conclusa ? 'psiphos-sedute__voce--conclusa' }}">
+
+      <p class="psiphos-sedute__intestazione">
+        {{ voce.intestazione }}
+        {% if voce.in_votazione %}
+          <span class="psiphos-sedute__votazione">{{ 'Votazione in corso'|t }}</span>
+        {% endif %}
+      </p>
+
+  {# L'oggetto sta su una riga sua perché è lungo e identifica la seduta; gli
+     altri tre sono brevi e si leggono insieme, come su una convocazione. #}
+      <dl class="psiphos-sedute__dati">
+        <dt>{{ 'Oggetto'|t }}</dt>
+        <dd><a href="{{ voce.convocazione }}">{{ voce.titolo }}</a></dd>
+      </dl>
+
+      <dl class="psiphos-sedute__dati psiphos-sedute__dati--riga">
+        <dt>{{ 'Data'|t({}, {'context': 'Psiphos seduta'}) }}</dt>
+        <dd>{{ voce.quando ?: '—' }}</dd>
+
+        <dt>{{ 'Organo'|t }}</dt>
+        <dd>{{ voce.organo }}</dd>
+
+        <dt>{{ 'Stato'|t }}</dt>
+        <dd>{{ voce.stato_etichetta }}</dd>
+
+        {% if voce.ruolo %}
+          <dt>{{ 'Ruolo'|t }}</dt>
+          <dd>{{ voce.ruolo }}</dd>
+        {% endif %}
+
+        {# Su una seduta conclusa non resta nulla da fare: la riga dei bottoni
+           costerebbe un'altra riga per dire due volte quel che l'oggetto già
+           collega. Il verbale però è l'unica cosa che si cerchi dopo, e sta
+           qui accanto allo stato senza occupare spazio proprio. #}
+        {% if voce.conclusa and voce.verbale %}
+          <dt>{{ 'Verbale'|t }}</dt>
+          <dd><a href="{{ voce.verbale }}">{{ 'consultabile'|t }}</a></dd>
+        {% endif %}
+      </dl>
+
+      {% if not voce.conclusa %}
+      <p class="psiphos-sedute__azioni">
+        {% if voce.aula %}
+          <a href="{{ voce.aula }}" class="psiphos-sedute__azione psiphos-sedute__azione--principale">{{ 'Entra in aula'|t }}</a>
+        {% endif %}
+        {% if voce.video %}
+          {# In una scheda nuova: chi lascia l'aula per aprire il video esce
+             dalla seduta, e la presenza decade. #}
+          <a href="{{ voce.video }}" class="psiphos-sedute__azione" target="_blank" rel="noopener noreferrer">
+            {{ 'Collegamento video'|t }}
+            <span class="visually-hidden">{{ '(si apre in una nuova scheda)'|t }}</span>
+          </a>
+        {% endif %}
+        <a href="{{ voce.convocazione }}" class="psiphos-sedute__azione">{{ 'Convocazione'|t }}</a>
+      </p>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+{% if eccedenti or archivio or creazione %}
+  <div class="psiphos-sedute__chiusura">
+    {% if eccedenti %}
+      <p class="psiphos-sedute__eccedenti">
+        {{ 'Altre @numero sedute non sono mostrate.'|t({'@numero': eccedenti}) }}
+      </p>
+    {% endif %}
+    <span class="psiphos-sedute__comandi">
+      {% if creazione %}
+        <a href="{{ creazione }}" class="psiphos-sedute__azione psiphos-sedute__azione--archivio">
+          {{ 'Convoca una seduta'|t }}
+        </a>
+      {% endif %}
+      {% if archivio %}
+        <a href="{{ archivio }}" class="psiphos-sedute__azione psiphos-sedute__azione--archivio">
+          {{ "Vai all'archivio delle mie sedute"|t }}
+        </a>
+      {% endif %}
+    </span>
+  </div>
+{% endif %}

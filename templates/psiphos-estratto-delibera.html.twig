@@ -1,0 +1,172 @@
+{#
+/**
+ * @file
+ * Estratto di delibera: il singolo atto deliberativo, in forma autonoma.
+ *
+ * Segue la struttura in uso negli atti degli organi collegiali — intestazione
+ * con numero e data, oggetto, denominazione dell'organo, premesse, dispositivo
+ * — perché è quella con cui la delibera viene protocollata, pubblicata e
+ * trasmessa. Il contenuto proviene dalla stessa struttura canonica su cui è
+ * calcolata l'impronta: quanto si legge e quanto si verifica non divergono.
+ *
+ * Variabili:
+ * - delibera: entità della delibera.
+ * - dati: struttura canonica dell'atto.
+ * - documento: TRUE quando la resa è destinata al PDF.
+ * - sigillato: TRUE quando l'atto è stato sigillato.
+ * - azioni: collegamenti operativi, assenti nella resa destinata al PDF.
+ */
+#}
+<article class="psiphos-estratto">
+
+  {% if azioni and not documento %}
+    <ul class="psiphos-azioni psiphos-azioni--testata">
+      {% for azione in azioni %}<li>{{ azione }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% include '@psiphos/psiphos-carta-intestata.html.twig' with {carta: dati.metadati.intestazione} only %}
+
+  <header class="psiphos-estratto__intestazione">
+    <h1>
+      {% if dati.atto.numero %}
+        {{ 'Delibera n. @numero'|t({'@numero': dati.atto.numero}) }}
+      {% else %}
+        {{ 'Delibera'|t }}
+      {% endif %}
+      {% if dati.atto.deliberato_il %} — {{ dati.atto.deliberato_il|psiphos_giorno }}{% endif %}
+    </h1>
+
+    <p class="psiphos-estratto__oggetto">{{ dati.atto.oggetto }}</p>
+
+    {#
+      La seduta chiude la testata: si legge quale atto è, su che cosa verte e
+      da quale adunanza proviene, che è l'ordine in cui la si cerca. Sopra
+      l'oggetto separava il numero di delibera da ciò che quel numero
+      identifica. La data non si ripete, è già nella prima riga.
+    #}
+    <p class="psiphos-estratto__seduta">
+      {{- dati.organo.denominazione }}
+      {%- if dati.seduta.numero %} — {{ 'seduta n.'|t }} {{ dati.seduta.numero }}{% endif %}
+      {%- if dati.seduta.anno_scolastico %} — {{ 'a.s.'|t }} {{ dati.seduta.anno_scolastico }}{% endif -%}
+    </p>
+  </header>
+
+  {#
+    «Il Collegio dei docenti,» apre il periodo che i «visto» proseguono e il
+    dispositivo chiude: è la forma in uso negli atti amministrativi, dove
+    l'organo è il soggetto della frase e non un'etichetta in capitale.
+  #}
+  <p class="psiphos-estratto__organo">{{ dati.organo.denominazione_con_articolo ?: dati.organo.denominazione }},</p>
+
+  {% if dati.atto.premesse %}
+    <div class="psiphos-estratto__premesse">
+      {{ dati.atto.premesse|psiphos_testo(dati.atto.premesse_formato) }}
+    </div>
+  {% endif %}
+
+  {% if dati.atto.dispositivo %}
+    <div class="psiphos-estratto__dispositivo">
+      {{ dati.atto.dispositivo|psiphos_testo(dati.atto.dispositivo_formato) }}
+    </div>
+  {% endif %}
+
+  {#
+    Proclamazione e prospetto sono composti dal sistema leggendo l'urna: è il
+    punto in cui una trascrizione a mano renderebbe l'atto difettoso senza che
+    nessuno se ne accorga fino al contenzioso. Le cifre sono incolonnate
+    perché si controllano una per una.
+  #}
+  <p class="psiphos-estratto__proclamazione"><strong>{{ dati.votazione.proclamazione }}</strong></p>
+
+  {% if dati.votazione.prospetto %}
+    <table class="psiphos-estratto__prospetto">
+      <caption class="psiphos-estratto__prospetto-titolo">{{ 'Esito della votazione'|t }}</caption>
+      <tbody>
+        {% for riga in dati.votazione.prospetto %}
+          <tr>
+            <th scope="row">
+              {{ riga.voce }}
+              {%- if riga.qualifica %} — <em>{{ riga.qualifica }}</em>{% endif %}
+            </th>
+            <td class="cifra">{{ riga.valore }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if dati.votazione.ripetizione_di_quesito %}
+    <p class="psiphos-verbale__nota">
+      {{ 'La votazione ripete quella annullata «@quesito».'|t({'@quesito': dati.votazione.ripetizione_di_quesito}) }}
+    </p>
+  {% endif %}
+
+  {#
+    Riferimenti e impronte stanno a piè pagina, non nel corpo: non sono ciò
+    che l'organo ha deliberato, e nel corpo pesavano come se lo fossero.
+
+    Non spariscono però, perché l'estratto è il documento che circola senza il
+    verbale: chi lo riceve deve poterlo verificare con quel che ha in mano.
+    L'impronta dell'atto e quella dell'estratto esistono solo qui — il verbale
+    porta le proprie, non queste.
+  #}
+  <footer class="psiphos-piede">
+    {% if sigillato %}
+      <p>
+        <span class="psiphos-piede__voce">{{ "Identificativo dell'atto"|t }}</span>
+        <span class="psiphos-verbale__impronta">{{ dati.metadati.identificativo }}</span>
+      </p>
+
+      {% if dati.votazione.sigillo_urna %}
+        <p>
+          <span class="psiphos-piede__voce">{{ "Sigillo dell'urna"|t }}</span>
+          <span class="psiphos-verbale__impronta">{{ dati.votazione.sigillo_urna }}</span>
+        </p>
+      {% endif %}
+
+      <p>
+        <span class="psiphos-piede__voce">{{ "Impronta dell'atto (SHA-256)"|t }}</span>
+        <span class="psiphos-verbale__impronta">{{ delibera.impronta_atto.value }}</span>
+      </p>
+
+      {% if not documento %}
+        <p>
+          <span class="psiphos-piede__voce">{{ "Impronta dell'estratto (SHA-256)"|t }}</span>
+          <span class="psiphos-verbale__impronta">{{ delibera.impronta_documento.value }}</span>
+          <span class="psiphos-piede__voce">{{ 'Formato'|t }}</span>
+          {{ delibera.formato.value }}
+        </p>
+      {% endif %}
+
+      {#
+        Identificativo e impronta del verbale su due righe: appaiati non ci
+        stanno, e la riga andava a capo in mezzo all'impronta. Ogni valore
+        resta accanto alla propria etichetta, che è la sola forma in cui si
+        può confrontare.
+      #}
+      <p>
+        <span class="psiphos-piede__voce">{{ 'Tratto dal verbale'|t }}</span>
+        <span class="psiphos-verbale__impronta">{{ dati.verbale.identificativo }}</span>
+      </p>
+
+      <p>
+        <span class="psiphos-piede__voce">{{ 'Impronta del verbale (SHA-256)'|t }}</span>
+        <span class="psiphos-verbale__impronta">{{ dati.verbale.impronta_contenuto }}</span>
+      </p>
+
+      <p>
+        {{ 'Sigillato il @quando da @chi.'|t({
+          '@quando': dati.verbale.sigillato_il|psiphos_istante,
+          '@chi': dati.verbale.sigillato_da,
+        }) }}
+        {% if documento %}
+          {{ "L'impronta di questo file e il formato di archiviazione sono registrati sulla delibera e nella sua esportazione strutturata: un documento non può contenere la propria impronta."|t }}
+        {% endif %}
+      </p>
+    {% else %}
+      <p>{{ "Atto non ancora sigillato: si sigilla insieme al verbale della seduta e fino a quel momento resta una bozza, non conservabile e non pubblicabile."|t }}</p>
+    {% endif %}
+  </footer>
+
+</article>

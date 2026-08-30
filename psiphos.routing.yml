@@ -1,0 +1,291 @@
+psiphos.settings:
+  path: '/admin/config/psiphos'
+  defaults:
+    _form: '\Drupal\psiphos\Form\SettingsForm'
+    _title: 'Psíphos — sedute collegiali a distanza'
+  requirements:
+    _permission: 'administer psiphos'
+
+# La rotta è generata dal tipo di entità e chiede «administer psiphos». Qui si
+# allarga: chi convoca deve vedere le proprie sedute, e dirigente e segreteria
+# tutte. Quali righe compaiano lo decide poi il controllo di accesso sulle
+# singole sedute, non questo permesso.
+entity.psiphos_seduta.collection:
+  path: '/admin/content/psiphos/seduta'
+  defaults:
+    _entity_list: 'psiphos_seduta'
+    _title: 'Sedute collegiali'
+  requirements:
+    _permission: 'administer psiphos+psiphos convocare seduta+psiphos visualizzare ogni verbale'
+
+psiphos.archivio_sedute:
+  path: '/psiphos/le-mie-sedute'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\ArchivioSeduteController::elenco'
+    _title: 'Le mie sedute collegiali'
+  options:
+    no_cache: TRUE
+  requirements:
+    # Uno qualunque basta: chi partecipa, chi presiede, chi verbalizza, chi
+    # consulta i verbali. Quali sedute si vedano lo decide poi l'elenco degli
+    # aventi diritto, non il permesso.
+    _permission: 'psiphos partecipare seduta+psiphos presiedere seduta+psiphos verbalizzare+psiphos visualizzare verbali+psiphos visualizzare ogni verbale'
+
+psiphos.aula:
+  path: '/psiphos/seduta/{psiphos_seduta}/aula'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\AulaController::aula'
+    _title_callback: '\Drupal\psiphos\Controller\AulaController::titolo'
+  options:
+    parameters:
+      psiphos_seduta:
+        type: 'entity:psiphos_seduta'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos partecipare seduta+psiphos presiedere seduta+administer psiphos'
+    _entity_access: 'psiphos_seduta.view'
+
+psiphos.aula.contenuto:
+  path: '/psiphos/seduta/{psiphos_seduta}/aula/contenuto'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\AulaController::contenuto'
+  options:
+    parameters:
+      psiphos_seduta:
+        type: 'entity:psiphos_seduta'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos partecipare seduta+psiphos presiedere seduta+administer psiphos'
+    _entity_access: 'psiphos_seduta.view'
+
+psiphos.aula.stato:
+  path: '/psiphos/seduta/{psiphos_seduta}/aula/stato'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\AulaController::stato'
+  options:
+    parameters:
+      psiphos_seduta:
+        type: 'entity:psiphos_seduta'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos partecipare seduta+psiphos presiedere seduta+administer psiphos'
+    _entity_access: 'psiphos_seduta.view'
+
+psiphos.seduta.aventi_diritto:
+  path: '/psiphos/seduta/{psiphos_seduta}/aventi-diritto'
+  defaults:
+    _form: '\Drupal\psiphos\Form\ElencoAventiDirittoForm'
+    _title: 'Aventi diritto'
+  options:
+    parameters:
+      psiphos_seduta:
+        type: 'entity:psiphos_seduta'
+    no_cache: TRUE
+  requirements:
+    _entity_access: 'psiphos_seduta.update'
+
+psiphos.seduta.verbale:
+  path: '/psiphos/seduta/{psiphos_seduta}/verbale'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\VerbaleController::perSeduta'
+    _title: 'Verbale'
+  options:
+    parameters:
+      psiphos_seduta:
+        type: 'entity:psiphos_seduta'
+    no_cache: TRUE
+  requirements:
+    _psiphos_verbale_seduta: 'TRUE'
+
+psiphos.verbale.esporta:
+  path: '/psiphos/verbale/{psiphos_verbale}/esporta'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\VerbaleController::esporta'
+  options:
+    parameters:
+      psiphos_verbale:
+        type: 'entity:psiphos_verbale'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos esportare esiti'
+    _entity_access: 'psiphos_verbale.view'
+
+psiphos.verbale.documento:
+  path: '/psiphos/verbale/{psiphos_verbale}/documento'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\VerbaleController::documento'
+  options:
+    parameters:
+      psiphos_verbale:
+        type: 'entity:psiphos_verbale'
+    no_cache: TRUE
+  requirements:
+    _entity_access: 'psiphos_verbale.view'
+
+psiphos.verbale.verifica:
+  path: '/psiphos/verbale/{psiphos_verbale}/verifica'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\VerbaleController::verifica'
+    _title: 'Verifica di integrità'
+  options:
+    parameters:
+      psiphos_verbale:
+        type: 'entity:psiphos_verbale'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos esportare esiti'
+    _entity_access: 'psiphos_verbale.view'
+
+psiphos.seduta.tracciature:
+  path: '/psiphos/seduta/{psiphos_seduta}/tracciature'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\TracciatureController::seduta'
+    _title: 'Tracciature'
+  options:
+    parameters:
+      psiphos_seduta:
+        type: 'entity:psiphos_seduta'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos consultare tracciature'
+
+psiphos.seduta.tracciature.esporta:
+  path: '/psiphos/seduta/{psiphos_seduta}/tracciature/esporta'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\TracciatureController::esporta'
+  options:
+    parameters:
+      psiphos_seduta:
+        type: 'entity:psiphos_seduta'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos consultare tracciature'
+
+psiphos.resoconti:
+  path: '/admin/reports/psiphos'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Psíphos'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+
+psiphos.conformita:
+  path: '/admin/reports/psiphos/conformita'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\ConformitaController::pagina'
+    _title: 'Attestazione di conformità'
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+
+psiphos.conformita.documento:
+  path: '/admin/reports/psiphos/conformita/documento'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\ConformitaController::documento'
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+
+psiphos.conformita.esporta:
+  path: '/admin/reports/psiphos/conformita/esporta'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\ConformitaController::esporta'
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+
+psiphos.delibera.atto:
+  path: '/psiphos/delibera/{psiphos_delibera}/atto'
+  defaults:
+    _entity_form: 'psiphos_delibera.atto'
+    _title: "Redazione dell'atto"
+  options:
+    parameters:
+      psiphos_delibera:
+        type: 'entity:psiphos_delibera'
+    no_cache: TRUE
+  requirements:
+    _psiphos_redazione_atto: 'TRUE'
+
+psiphos.delibera.documento:
+  path: '/psiphos/delibera/{psiphos_delibera}/documento'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\DeliberaController::documento'
+  options:
+    parameters:
+      psiphos_delibera:
+        type: 'entity:psiphos_delibera'
+    no_cache: TRUE
+  requirements:
+    _entity_access: 'psiphos_delibera.view'
+
+psiphos.delibera.esporta:
+  path: '/psiphos/delibera/{psiphos_delibera}/esporta'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\DeliberaController::esporta'
+  options:
+    parameters:
+      psiphos_delibera:
+        type: 'entity:psiphos_delibera'
+    no_cache: TRUE
+  requirements:
+    _permission: 'psiphos esportare esiti'
+    _entity_access: 'psiphos_delibera.view'
+
+psiphos.documentazione:
+  path: '/admin/reports/psiphos/documentazione'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\DocumentazioneController::elenco'
+    _title: "Documenti per l'istituzione"
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+
+psiphos.documentazione.documento:
+  path: '/admin/reports/psiphos/documentazione/{documento}'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\DocumentazioneController::documento'
+    _title_callback: '\Drupal\psiphos\Controller\DocumentazioneController::titolo'
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+    documento: '[a-z0-9-]+'
+
+psiphos.documentazione.guida:
+  path: '/admin/reports/psiphos/documentazione/{documento}/guida'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\DocumentazioneController::guida'
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+    documento: '[a-z0-9-]+'
+
+psiphos.documentazione.sorgente:
+  path: '/admin/reports/psiphos/documentazione/{documento}/sorgente'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\DocumentazioneController::sorgente'
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+    documento: '[a-z0-9-]+'
+
+psiphos.documentazione.modello:
+  path: '/admin/reports/psiphos/documentazione/{documento}/modulo/{modello}'
+  defaults:
+    _controller: '\Drupal\psiphos\Controller\DocumentazioneController::modello'
+    modello: null
+  options:
+    no_cache: TRUE
+  requirements:
+    _permission: 'administer psiphos'
+    documento: '[a-z0-9-]+'
+    modello: '[a-z0-9-]*'

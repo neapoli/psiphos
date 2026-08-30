@@ -1,0 +1,33 @@
+{
+    "name": "neapoli/psiphos",
+    "type": "drupal-module",
+    "description": "Psíphos, dal greco \"sassolino\" usato per votare nell''antica Grecia, è un modulo Drupal per lo svolgimento a distanza delle sedute collegiali deliberative (nota MIM prot. 3803 del 30/06/2026, art. 44 CCNL Istruzione e Ricerca 2019-2021).",
+    "keywords": [
+        "Drupal",
+        "module",
+        "Psíphos"
+    ],
+    "homepage": "https://github.com/neapoli/psiphos",
+    "license": "AGPL-3.0-only",
+    "authors": [
+        {
+            "name": "Crescenzo Velleca",
+            "email": "info@softwebadvice.com",
+            "role": "Maintainer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/neapoli/psiphos/issues",
+        "source": "https://github.com/neapoli/psiphos"
+    },
+    "require": {
+        "php": ">=8.1",
+        "drupal/core": "^10.3 || ^11",
+        "drupal/entity_print": "^2.19"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "suggest": {
+        "ouitoulia/skenografia": "Tema dei siti scolastici Ouitoulía: il modulo vi si integra, ma non lo richiede."
+    }
+}

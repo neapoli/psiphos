@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Un documento di accompagnamento reso in pagina.
+ *
+ * Variabili:
+ * - contenuto: il documento reso in HTML.
+ * - azioni: collegamenti operativi.
+ */
+#}
+<div class="psiphos-documento">
+
+  {% if azioni %}
+    <ul class="psiphos-azioni psiphos-azioni--testata">
+      {% for azione in azioni %}<li>{{ azione }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <div class="psiphos-documento__corpo">{{ contenuto }}</div>
+
+</div>

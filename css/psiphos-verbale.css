@@ -1,0 +1,980 @@
+/**
+ * Verbale a schermo.
+ *
+ * Il documento da conservare porta un proprio foglio di stile, essenziale e
+ * in unità assolute, perché deve restare leggibile fra dieci anni. Qui si
+ * interviene solo su ciò che rende la lettura a schermo meno faticosa.
+ */
+
+/* Nessun vincolo di larghezza: il verbale è fitto di tabelle, elenchi di
+   nominativi e coppie etichetta-valore, e la misura da lettura continua li
+   mandava a capo molto prima del necessario. Lo spazio disponibile lo decide
+   il tema di amministrazione. */
+
+/* Scala tipografica del documento, non quella del tema. Chi redige guarda
+   questa pagina per capire come verrà il PDF: con i titoli del backend —
+   grandi il doppio del testo — la somiglianza si perde, e la lunghezza
+   apparente del verbale non è più quella vera. Nel documento i titoli di
+   sezione sono appena più grandi del corpo. */
+.psiphos-verbale h2,
+.psiphos-estratto h2 {
+  border-bottom: 1px solid currentColor;
+  font-size: 1.15em;
+  font-weight: 700;
+  margin: 1.5em 0 0.35em;
+  padding-bottom: 0.2em;
+}
+
+.psiphos-verbale h3,
+.psiphos-estratto h3 {
+  font-size: 1em;
+  font-weight: 700;
+  margin: 0.9em 0 0.25em;
+}
+
+.psiphos-verbale table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 0.5rem 1.5rem;
+}
+
+.psiphos-verbale th,
+.psiphos-verbale td {
+  border: 1px solid currentColor;
+  padding: 0.35rem 0.6rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+.psiphos-verbale dt {
+  font-weight: 700;
+  margin-block-start: 0.5rem;
+}
+
+.psiphos-verbale dd {
+  margin-inline-start: 0;
+}
+
+.psiphos-verbale__impronta {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.psiphos-verbale__nota {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.psiphos-verifica__esito--integro {
+  font-weight: 700;
+}
+
+.psiphos-verifica__esito--compromesso {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* La corrispondenza con la banca dati è un segnale di secondo livello: si
+   distingue dall'integrità compromessa, che è un allarme, senza affidare la
+   distinzione al solo colore. */
+.psiphos-verifica__esito--attenzione {
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+
+.psiphos-tracciature table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.psiphos-tracciature th,
+.psiphos-tracciature td {
+  border: 1px solid currentColor;
+  padding: 0.3rem 0.55rem;
+  text-align: start;
+  vertical-align: top;
+  font-size: 0.9375rem;
+}
+
+.psiphos-tracciature__anomalia td:nth-child(2) {
+  font-weight: 700;
+}
+
+.psiphos-conformita table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.psiphos-conformita th,
+.psiphos-conformita td {
+  border: 1px solid currentColor;
+  padding: 0.45rem 0.6rem;
+  text-align: start;
+  vertical-align: top;
+  font-size: 0.9375rem;
+}
+
+.psiphos-conformita td p {
+  margin-block: 0.3rem 0;
+}
+
+/* Le larghezze dichiarate valgono solo con table-layout fisso: altrimenti il
+   browser le tratta come suggerimenti e la colonna dell'attuazione, che porta
+   la prosa più lunga, torna a schiacciare le due di sintesi. */
+.psiphos-conformita__requisiti {
+  table-layout: fixed;
+}
+
+.psiphos-conformita__col--paragrafo {
+  width: 4%;
+}
+
+.psiphos-conformita__col--requisito {
+  width: 21%;
+}
+
+.psiphos-conformita__col--attuazione {
+  width: 47%;
+}
+
+.psiphos-conformita__col--carico {
+  width: 15%;
+}
+
+.psiphos-conformita__col--stato {
+  width: 13%;
+}
+
+.psiphos-conformita__requisiti td {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 60rem) {
+  /* Sotto questa soglia le cinque colonne non stanno: la tabella scorre per
+     conto proprio, senza trascinare la pagina. */
+  .psiphos-conformita {
+    overflow-x: auto;
+  }
+
+  .psiphos-conformita__requisiti {
+    min-width: 52rem;
+  }
+}
+
+.psiphos-conformita__riga--attenzione td:last-child,
+.psiphos-conformita__riga--a_carico td:last-child {
+  font-weight: 700;
+}
+
+.psiphos-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-block: 1rem;
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+/* I temi di amministrazione danno ai pulsanti un margine proprio, pensato per
+   la barra delle azioni di un modulo: qui la spaziatura la fa l'elenco. */
+.psiphos-azioni .button {
+  margin: 0;
+}
+
+.psiphos-seduta__scrutinio {
+  width: auto;
+  min-width: 16rem;
+  border-collapse: collapse;
+  margin-block: 0.5rem 1rem;
+}
+
+.psiphos-seduta__scrutinio caption {
+  text-align: start;
+  font-size: 0.875rem;
+  opacity: 0.75;
+  padding-block-end: 0.25rem;
+}
+
+.psiphos-seduta__scrutinio th,
+.psiphos-seduta__scrutinio td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.6rem;
+  text-align: start;
+  font-size: 0.9375rem;
+}
+
+.psiphos-seduta__scrutinio td {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+/**
+ * Scheda della convocazione.
+ *
+ * Sette colonne per una riga sola. Su schermi larghi è una tabella; sotto i
+ * 60rem si ribalta in verticale e diventa un elenco etichetta-valore, che per
+ * un singolo record è più leggibile di uno scorrimento orizzontale o di
+ * colonne nascoste dietro un pulsante. Il ribaltamento è tutto in CSS e non
+ * dipende dal tema: Drupal offre un meccanismo per le tabelle responsive, ma
+ * richiede classi apposite e il foglio di stile che le governa vive nei temi
+ * di amministrazione, non nel modulo.
+ */
+
+.psiphos-seduta__scheda {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.psiphos-seduta__scheda caption {
+  text-align: start;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  padding-block-end: 0.4rem;
+}
+
+.psiphos-seduta__scheda th,
+.psiphos-seduta__scheda td {
+  border: 1px solid currentColor;
+  padding: 0.45rem 0.7rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+.psiphos-seduta__scheda thead th {
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* Le colonne numeriche si restringono al contenuto: la larghezza all'1% è
+   il modo con cui una tabella assegna a una colonna il minimo indispensabile. */
+.psiphos-seduta__scheda .cifra,
+.psiphos-seduta__scheda thead th:nth-child(6),
+.psiphos-seduta__scheda thead th:nth-child(7) {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.psiphos-seduta__scheda .cifra {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.psiphos-seduta__scheda thead th:nth-child(6),
+.psiphos-seduta__scheda thead th:nth-child(7) {
+  text-align: end;
+}
+
+/* Due dati distinti nella stessa cella: ciascuno sulla propria riga e
+   comprensibile da solo. «3» sopra e «richiesti · 4 presenti» sotto lasciava
+   una riga che non si spiega senza quella precedente. */
+.psiphos-seduta__scheda .valore {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  align-items: flex-end;
+}
+
+.psiphos-seduta__scheda .qualifica {
+  font-size: 0.8125rem;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.psiphos-seduta .tabella-cont {
+  overflow-x: auto;
+  margin-block: 0.5rem 1.5rem;
+}
+
+@media (max-width: 60rem) {
+  .psiphos-seduta__scheda thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .psiphos-seduta__scheda,
+  .psiphos-seduta__scheda tbody,
+  .psiphos-seduta__scheda tr,
+  .psiphos-seduta__scheda td {
+    display: block;
+    width: auto;
+  }
+
+  .psiphos-seduta__scheda tr {
+    border: 1px solid currentColor;
+  }
+
+  .psiphos-seduta__scheda td {
+    border: none;
+    border-block-start: 1px solid currentColor;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    justify-content: space-between;
+    align-items: baseline;
+    text-align: start;
+  }
+
+  .psiphos-seduta__scheda tr td:first-child {
+    border-block-start: none;
+  }
+
+  .psiphos-seduta__scheda td::before {
+    content: attr(data-etichetta);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+    flex: 0 0 auto;
+  }
+
+  .psiphos-seduta__scheda .cifra {
+    text-align: end;
+  }
+
+  .psiphos-seduta__scheda .valore {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.6rem;
+    align-items: baseline;
+  }
+
+  .psiphos-seduta__scheda .qualifica::before {
+    content: "·";
+    margin-inline-end: 0.4rem;
+    opacity: 0.6;
+  }
+}
+
+.psiphos-seduta__odg {
+  list-style: none;
+  padding-inline-start: 0;
+  margin-block: 1rem 0;
+}
+
+.psiphos-seduta__odg > li + li {
+  margin-block-start: 1.75rem;
+  padding-block-start: 1.25rem;
+  border-block-start: 1px solid currentColor;
+}
+
+.psiphos-seduta__odg > li > h3 {
+  margin-block: 0 0.4rem;
+}
+
+.psiphos-seduta__votazione {
+  margin-block-start: 0.9rem;
+  padding-inline-start: 0.9rem;
+  border-inline-start: 2px solid currentColor;
+}
+
+/* I comandi in testata stanno sopra l'intestazione e ne restano staccati. */
+.psiphos-azioni--testata {
+  margin-block: 0 1.5rem;
+  padding-block-end: 1rem;
+  border-block-end: 1px solid currentColor;
+}
+
+/* Estratto di delibera: l'atto reso a schermo con la stessa impaginazione
+   che avrà nel documento, così chi lo redige vede quel che pubblicherà. */
+/* Carta intestata, comune a verbali ed estratti: centrata e in corpo minore,
+   perché identifica l'ente ma non è il contenuto dell'atto. Le righe stanno
+   strette per leggersi come blocco unico anziché come paragrafo.
+
+   La riga orizzontale sta qui e non sotto la testata dell'atto: separa chi
+   produce il documento da ciò che il documento dice, che è la divisione che
+   conta. Sotto la testata tagliava invece l'atto dal proprio contenuto. */
+.psiphos-carta {
+  border-bottom: 2px solid currentColor;
+  font-size: 0.82em;
+  line-height: 1.35;
+  margin: 0 0 1em;
+  padding-bottom: 0.6em;
+  text-align: center;
+}
+
+.psiphos-carta p {
+  margin: 0;
+}
+
+.psiphos-carta__istituto {
+  font-size: 1.15em;
+  font-weight: 700;
+  margin-bottom: 0.2em !important;
+}
+
+/* Testata del verbale: sotto la carta intestata il titolo non deve più fare
+   da apertura del documento — quel ruolo ce l'ha la denominazione dell'ente —
+   e in corpo pieno schiacciava tutto ciò che segue. */
+.psiphos-verbale__intestazione {
+  line-height: 1.25;
+  margin-bottom: 1.2em;
+  text-align: center;
+}
+
+.psiphos-verbale__intestazione h1 {
+  font-size: 1em;
+  margin: 0 0 0.1em;
+}
+
+.psiphos-verbale__intestazione p {
+  font-size: 1em;
+  margin: 0;
+}
+
+/* Testata dell'atto centrata sotto la carta intestata: numero e data sono
+   l'etichetta con cui l'atto viene protocollato, l'oggetto è il titolo del
+   documento approvato. Nessuno dei due è il contenuto, e in corpo grande
+   rubavano la scena al dispositivo. */
+.psiphos-estratto__intestazione {
+  line-height: 1.25;
+  margin-bottom: 1.2em;
+  text-align: center;
+}
+
+.psiphos-estratto__intestazione h1 {
+  font-size: 1em;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.1em;
+}
+
+.psiphos-estratto__seduta {
+  font-size: 1em;
+  margin: 0;
+}
+
+.psiphos-estratto__oggetto {
+  font-size: 1em;
+  font-weight: 700;
+  margin: 0 0 0.1em;
+}
+
+.psiphos-estratto__organo {
+  font-weight: 700;
+  margin: 0 0 0.8em;
+}
+
+.psiphos-estratto__premesse {
+  list-style: none;
+  margin: 0 0 1em;
+  padding: 0;
+}
+
+.psiphos-estratto__premesse li {
+  margin: 0 0 0.25em;
+}
+
+.psiphos-estratto__dispositivo {
+  margin: 0 0 0.8em;
+}
+
+.psiphos-estratto__formula {
+  margin: 0 0 1.2em;
+}
+
+.psiphos-seduta__delibere {
+  font-weight: 400;
+}
+
+/* Colophon, comune a verbali ed estratti: riferimenti e impronte non sono
+   contenuto del documento. Un blocco solo, perché i due si presentano allo
+   stesso modo e correggerne uno soltanto è come non correggerlo. */
+.psiphos-piede {
+  border-top: 1px solid currentColor;
+  font-size: 0.72em;
+  line-height: 1.4;
+  margin-top: 2em;
+  opacity: 0.85;
+  padding-top: 0.6em;
+}
+
+.psiphos-piede p {
+  margin: 0 0 0.15em;
+}
+
+.psiphos-piede .psiphos-verbale__impronta {
+  word-break: normal;
+}
+
+.psiphos-piede__voce {
+  font-weight: 700;
+}
+
+.psiphos-piede__voce::after {
+  content: " ";
+}
+
+/* Dati di convocazione: etichetta e valore sulla stessa riga. Su due righe
+   ciascuna coppia occupava il doppio dello spazio senza guadagnare in
+   leggibilità, e il verbale apre con sei coppie brevi di seguito. */
+.psiphos-verbale__dati > div {
+  margin: 0 0 0.25em;
+}
+
+.psiphos-verbale__dati dt {
+  display: inline;
+  font-weight: 700;
+}
+
+.psiphos-verbale__dati dt::after {
+  content: ":";
+}
+
+.psiphos-verbale__dati dd {
+  display: inline;
+  margin: 0;
+}
+
+.psiphos-verbale__odg h3 {
+  margin: 0.35em 0 0.1em;
+}
+
+.psiphos-verbale__odg p {
+  margin: 0 0 0.2em;
+}
+
+.psiphos-verbale__illustrazione {
+  font-size: 0.92em;
+  margin: 0 0 0.35em;
+}
+
+.psiphos-verbale__illustrazione p {
+  margin: 0 0 0.2em;
+}
+
+/* Filetto breve e centrato fra una delibera e l'altra: dice dove finisce un
+   atto e comincia il successivo senza pesare come divisione di sezione. */
+.psiphos-verbale__divisore {
+  border: none;
+  border-top: 1px solid currentColor;
+  margin: 1.5em auto;
+  opacity: 0.5;
+  width: 8em;
+}
+
+.psiphos-verbale__delibere h3 {
+  margin: 0.9em 0 0.25em;
+}
+
+.psiphos-verbale__delibere .psiphos-verbale__dati > div {
+  margin: 0 0 0.1em;
+}
+
+.psiphos-verbale__quesito {
+  margin: 0 0 0.3em;
+}
+
+/* Gli elenchi dei votanti occupano più righe: interlinea stretta, o una sola
+   votazione riempie mezza pagina di nomi. */
+.psiphos-verbale__elenco {
+  line-height: 1.25;
+}
+
+/* Documenti per l'istituzione: si leggono come testo continuo, non come
+   interfaccia. La misura è quella della lettura, non quella della pagina. */
+.psiphos-documento__corpo {
+  max-width: 46rem;
+}
+
+.psiphos-documento__corpo h2 {
+  border-bottom: 1px solid currentColor;
+  margin: 2em 0 0.6em;
+  padding-bottom: 0.2em;
+}
+
+.psiphos-documento__corpo h3 {
+  margin: 1.6em 0 0.4em;
+}
+
+.psiphos-documento__corpo h4 {
+  margin: 1.2em 0 0.3em;
+}
+
+.psiphos-documento__corpo blockquote {
+  border-inline-start: 3px solid currentColor;
+  margin: 1.2em 0;
+  padding-inline-start: 1em;
+}
+
+.psiphos-documento__corpo pre {
+  background: rgb(0 0 0 / 5%);
+  overflow-x: auto;
+  padding: 0.8em 1em;
+}
+
+.psiphos-documento__tabella {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.psiphos-documento__corpo table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+}
+
+.psiphos-documento__corpo th,
+.psiphos-documento__corpo td {
+  border: 1px solid currentColor;
+  padding: 0.35em 0.6em;
+  text-align: start;
+  vertical-align: top;
+}
+
+.psiphos-documento__spunta {
+  list-style: none;
+  margin-inline-start: -1.2em;
+}
+
+.psiphos-documentazione__elenco > li {
+  margin-bottom: 0.5em;
+}
+
+/* Le sedute dell'utente, sulla scrivania del personale.
+
+   I bottoni portano i propri colori — sfondo e testo dichiarati insieme, e
+   così anche al passaggio del mouse. Le classi dei temi dipingono l'uno e
+   lasciano l'altro al colore ereditato: il risultato è testo scuro su fondo
+   scuro, che si scopre solo passandoci sopra. */
+.psiphos-sedute {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Il colore del filetto accompagna lo stato, non lo comunica: l'intestazione
+   di ciascuna voce e il campo «Stato» lo dicono già a parole, e il filetto
+   della seduta in corso è anche il doppio degli altri. È la condizione che
+   rende ammissibile l'uso del colore (WCAG 1.4.1): mai da solo.
+
+   Il concluso è neutro e non rosso. Il rosso dice errore o pericolo, e una
+   seduta che si è conclusa regolarmente non è né l'uno né l'altro; per giunta
+   verde e rosso sono la coppia che il daltonismo più diffuso confonde, e
+   sarebbero proprio i due estremi dell'elenco. Verde, ambra e grigio restano
+   distinti anche a chi non separa il rosso dal verde. */
+.psiphos-sedute__voce {
+  --psiphos-accento: color-mix(in srgb, currentColor 45%, transparent);
+  border: 1px solid;
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  border-inline-start: 4px solid var(--psiphos-accento);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9375rem;
+}
+
+/* La seduta in corso: filetto doppio, oltre al colore. */
+.psiphos-sedute__voce--rilievo {
+  --psiphos-accento: #1c7a44;
+  border-inline-start-width: 8px;
+}
+
+.psiphos-sedute__voce--convocata {
+  --psiphos-accento: #a86a05;
+}
+
+/* Le concluse restano leggibili ma non chiedono attenzione. */
+.psiphos-sedute__voce--conclusa {
+  --psiphos-accento: color-mix(in srgb, currentColor 40%, transparent);
+  font-size: 0.875rem;
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  .psiphos-sedute__voce--rilievo {
+    --psiphos-accento: #4fb87a;
+  }
+
+  .psiphos-sedute__voce--convocata {
+    --psiphos-accento: #d69b34;
+  }
+}
+
+.psiphos-sedute__intestazione {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.8125em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.75rem;
+  align-items: baseline;
+}
+
+.psiphos-sedute__votazione {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.1em;
+}
+
+/* Ogni dato con la propria etichetta: l'etichetta a sinistra, il valore
+   accanto, incolonnati perché l'occhio scorra la colonna dei valori. */
+.psiphos-sedute__dati {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.6rem;
+  margin: 0;
+}
+
+.psiphos-sedute__dati dt {
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+.psiphos-sedute__dati dt::after {
+  content: ':';
+}
+
+.psiphos-sedute__dati dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.psiphos-sedute__dati dd a {
+  color: inherit;
+}
+
+/* Data, organo e stato sono brevi e si leggono insieme, su una riga sola.
+   Il ritorno a capo li dispone in colonna solo dove non ci starebbero. */
+.psiphos-sedute__dati--riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35rem;
+  row-gap: 0.1rem;
+  margin-block-start: 0.15rem;
+}
+
+.psiphos-sedute__dati--riga dt:not(:first-of-type) {
+  margin-inline-start: 0.9rem;
+}
+
+.psiphos-sedute__dati--riga dd {
+  white-space: nowrap;
+}
+
+.psiphos-sedute__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+  align-items: center;
+  margin: 0.6rem 0 0;
+}
+
+/* Il bottone secondario: contorno e testo dal colore del testo corrente, e
+   all'inversione del passaggio del mouse i due si scambiano insieme.
+
+   La classe è ripetuta per guadagnare specificità sui collegamenti del tema,
+   invece di pendere da un contenitore: il bottone dell'archivio sta fuori
+   dall'elenco, e con il contenitore come radice le regole non lo
+   raggiungevano — restava un collegamento nudo dove doveva esserci un
+   bottone. */
+.psiphos-sedute__azione.psiphos-sedute__azione,
+.psiphos-sedute__azione.psiphos-sedute__azione:link,
+.psiphos-sedute__azione.psiphos-sedute__azione:visited {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid currentColor;
+  border-radius: 0.2rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.875em;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+/* Al passaggio del mouse i bottoni secondari prendono i colori del
+   principale: la coppia è dichiarata insieme, e non si ricava dal colore del
+   testo — che sui collegamenti è azzurro, e produceva testo azzurro su fondo
+   nero. */
+.psiphos-sedute__azione.psiphos-sedute__azione:hover,
+.psiphos-sedute__azione.psiphos-sedute__azione:focus {
+  background: #14448a;
+  border-color: #14448a;
+  color: #fff;
+  text-decoration: none;
+}
+
+.psiphos-sedute__azione--principale.psiphos-sedute__azione--principale,
+.psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:link,
+.psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:visited {
+  background: #14448a;
+  border-color: #14448a;
+  color: #fff;
+}
+
+.psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:hover,
+.psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:focus {
+  background: #0e2f61;
+  border-color: #0e2f61;
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .psiphos-sedute__azione.psiphos-sedute__azione:hover,
+  .psiphos-sedute__azione.psiphos-sedute__azione:focus {
+    background: #6fa8ff;
+    border-color: #6fa8ff;
+    color: #08172e;
+  }
+
+  .psiphos-sedute__azione--principale.psiphos-sedute__azione--principale,
+  .psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:link,
+  .psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:visited {
+    background: #6fa8ff;
+    border-color: #6fa8ff;
+    color: #08172e;
+  }
+
+  .psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:hover,
+  .psiphos-sedute__azione--principale.psiphos-sedute__azione--principale:focus {
+    background: #9cc4ff;
+    border-color: #9cc4ff;
+    color: #08172e;
+  }
+}
+
+/* La chiusura del blocco: l'archivio è un'uscita, non una nota a piè di
+   pagina, e un'uscita si vede. */
+.psiphos-sedute__chiusura {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-block-start: 0.8rem;
+  text-align: center;
+}
+
+.psiphos-sedute__eccedenti {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+/* I due comandi sulla stessa riga: convocare sta a sinistra perché è ciò che
+   si fa, consultare l'archivio a destra perché è ciò che si cerca. */
+.psiphos-sedute__comandi {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 0.5rem;
+}
+
+.psiphos-sedute__vuoto {
+  margin: 0 0 0.4rem;
+  font-size: 0.9375rem;
+}
+
+/* Il bottone dell'archivio segue le regole degli altri — contorno, e
+   all'inversione sfondo blu con testo bianco — perché è lì che l'occhio ha
+   già imparato che cosa succede passandoci sopra. */
+.psiphos-sedute__azione--archivio.psiphos-sedute__azione--archivio {
+  padding-inline: 1.1rem;
+  padding-block: 0.4rem;
+}
+
+/* L'archivio personale: qui la tabella è la forma giusta, dove sulla
+   scrivania non lo era. Un archivio si scorre in verticale cercando una
+   riga, e sono le colonne incolonnate a renderlo scorribile. */
+.psiphos-archivio {
+  overflow-x: auto;
+}
+
+.psiphos-archivio__tabella {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+}
+
+.psiphos-archivio__tabella th,
+.psiphos-archivio__tabella td {
+  border: 1px solid;
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  padding: 0.4rem 0.6rem;
+  text-align: start;
+  vertical-align: top;
+  font-size: 0.9375rem;
+}
+
+.psiphos-archivio__tabella th {
+  font-weight: 700;
+}
+
+.psiphos-archivio__quando {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.psiphos-archivio__totale {
+  font-size: 0.9375rem;
+}
+
+.psiphos-archivio__ritorno {
+  margin-block: 0 0.8rem;
+}
+
+/* I filtri: una barra che si dispone da sé, perché con cinque controlli su
+   schermo stretto una griglia fissa lascerebbe metà riga vuota. */
+.psiphos-filtri {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem 0.8rem;
+  margin-block-end: 1rem;
+}
+
+.psiphos-filtri__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.psiphos-filtri__campo--largo {
+  flex: 1 1 14rem;
+}
+
+.psiphos-filtri__campo label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.psiphos-filtri__campo input,
+.psiphos-filtri__campo select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid;
+  border-color: color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: 0.2rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9375rem;
+}
+
+.psiphos-filtri__comandi {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+/* Il <button> del modulo non è un collegamento: le pseudoclassi :link e
+   :visited non lo raggiungono, e il tipo di carattere non si eredita. */
+.psiphos-filtri button.psiphos-sedute__azione {
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+

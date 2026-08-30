@@ -1,0 +1,18 @@
+{#
+/**
+ * @file
+ * Il ritorno alla dashboard, condiviso dall'archivio personale e dall'elenco
+ * amministrativo.
+ *
+ * Ci si arriva da lì, e senza una via di ritorno ci si resta: il tasto
+ * indietro del browser non è una via di navigazione, è un rimedio.
+ *
+ * Variabili:
+ * - indirizzo: la dashboard, già verificata come raggiungibile.
+ */
+#}
+{% if indirizzo %}
+  <p class="psiphos-archivio__ritorno">
+    <a href="{{ indirizzo }}" class="psiphos-sedute__azione">{{ 'Torna alla dashboard'|t }}</a>
+  </p>
+{% endif %}

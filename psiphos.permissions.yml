@@ -1,0 +1,38 @@
+administer psiphos:
+  title: 'Amministrare Psíphos'
+  description: 'Configurare il modulo, i livelli di autenticazione e le politiche di sessione.'
+  restrict access: true
+
+psiphos convocare seduta:
+  title: 'Convocare una seduta collegiale'
+  description: "Creare la convocazione, l'ordine del giorno e l'elenco degli aventi diritto."
+
+psiphos presiedere seduta:
+  title: 'Presiedere una seduta'
+  description: 'Aprire e chiudere la seduta e le singole votazioni, sospendere o ripetere una votazione (allegato tecnico §8).'
+
+psiphos verbalizzare:
+  title: 'Verbalizzare una seduta'
+  description: 'Redigere il verbale e sigillarlo alla chiusura della seduta.'
+
+psiphos partecipare seduta:
+  title: 'Partecipare alle sedute ed esprimere il voto'
+  description: 'Permesso di base degli aventi diritto al voto.'
+
+psiphos visualizzare verbali:
+  title: 'Consultare i verbali sigillati delle proprie sedute'
+  description: "Consultare i verbali e gli estratti delle sole sedute in cui si figura fra gli aventi diritto. Il verbale del Consiglio di una classe, o del gruppo di lavoro operativo di un alunno, resta precluso a chi non ne fa parte."
+
+psiphos visualizzare ogni verbale:
+  title: 'Consultare ogni verbale sigillato'
+  description: "Consultare i verbali di qualunque organo, anche di sedute a cui non si è partecipato. Riguarda il dirigente scolastico e il personale di segreteria: i verbali dei gruppi di lavoro operativi contengono dati sulla salute di alunni identificati, e chi ha questo permesso vi accede tutti."
+  restrict access: true
+
+psiphos esportare esiti:
+  title: 'Esportare gli esiti delle votazioni'
+  description: 'Estrarre gli esiti in formato strutturato ai fini della conservazione (allegato tecnico §7).'
+
+psiphos consultare tracciature:
+  title: 'Consultare le tracciature tecniche'
+  description: 'Ricostruire ex post lo svolgimento del procedimento deliberativo e verificarne l''integrità (allegato tecnico §2 e §5).'
+  restrict access: true
