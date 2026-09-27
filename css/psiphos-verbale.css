@@ -872,9 +872,16 @@
   gap: 0.4rem 0.5rem;
 }
 
+/* Il messaggio di blocco vuoto sta al centro, come i comandi che lo seguono:
+   senza voci non c'è colonna di testo a cui allinearlo a sinistra, e a filo
+   del bordo sembrerebbe un frammento rimasto lì. Il respiro laterale gli
+   impedisce di toccare i lati sugli schermi stretti. */
 .psiphos-sedute__vuoto {
   margin: 0 0 0.4rem;
+  padding-inline: 0.8rem;
   font-size: 0.9375rem;
+  text-align: center;
+  text-wrap: balance;
 }
 
 /* Il bottone dell'archivio segue le regole degli altri — contorno, e
